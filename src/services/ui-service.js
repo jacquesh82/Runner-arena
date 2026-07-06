@@ -13,6 +13,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { Application, Graphics } from "pixi.js";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { buildGrid, mPerDegLng } from "../hexgrid.js";
+import { TerritoryService } from "./territory-service.js";
 
 const CONFIG = {
   hexSize: 55, // rayon d'un hexagone en mètres
@@ -56,10 +57,12 @@ const easeOutBack = (t) => {
 const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
 export class UiService {
-  constructor(location, { start = [48.8566, 2.3522] } = {}) {
+  constructor(location, { start = [48.8566, 2.3522], mode = "endurance" } = {}) {
     this.location = location;
     this.startLatLng = start;
+    this.mode = mode;
     this.grid = null;
+    this.territory = null;
     this.player = { lat: start[0], lng: start[1], heading: 0, has: false };
     this.follow = true;
 
@@ -89,6 +92,14 @@ export class UiService {
     this.grid = buildGrid(this.startLatLng, CONFIG.hexSize, CONFIG.range);
     this._precomputeCorners();
     this._seedRival(); // quelques zones adverses pour l'ambiance "arène"
+
+    /* --- Moteur de territoire (logique de conquête, séparée du rendu) --- */
+    this.territory = new TerritoryService(this.grid, { me: "me", mode: this.mode });
+    this.territory.addEventListener("capture", (e) => {
+      this._captureFx(e.detail.tile, e.detail.kind);
+      document.getElementById("statZones").textContent = this.territory.zones;
+    });
+    this.territory.addEventListener("enclose", (e) => this._encloseFx(e.detail.tiles));
 
     /* --- Calque WebGL Pixi --- */
     const stage = document.getElementById("stage");
@@ -159,9 +170,9 @@ export class UiService {
 
     if (this.follow) this.map.easeTo({ center: [p.lng, p.lat], duration: 400 });
 
-    // Capture de la zone courante
-    const tile = this.grid.tileAt(p.lat, p.lng);
-    if (tile && tile.owner !== "me") this._capture(tile);
+    // La logique de conquête (traversée / encerclement / vol) est déléguée
+    // au TerritoryService ; on ne fait plus que réagir à ses évènements.
+    this.territory.visit(p.lat, p.lng);
   }
 
   _onStats(s) {
@@ -174,13 +185,11 @@ export class UiService {
   }
 
   /* ---- Capture d'une zone : le moment "juicy" ---- */
-  _capture(tile) {
-    const stolen = tile.owner === "rival";
-    tile.owner = "me";
-    tile.capT = 0.0001;
+  /* ---- Mise en scène d'une capture (le modèle est déjà à jour côté service) ---- */
+  _captureFx(tile, kind) {
+    const stolen = kind === "steal";
+    tile.capT = 0.0001;   // état d'animation (rendu)
     tile.flash = 1;
-    this.zones++;
-    document.getElementById("statZones").textContent = this.zones;
 
     // burst de particules
     const p = this._project(tile.lat, tile.lng);
@@ -201,6 +210,29 @@ export class UiService {
     this._banner(stolen ? "Zone volée à l'adversaire !" : "Zone conquise !");
     this._flash();
     Haptics.impact({ style: stolen ? ImpactStyle.Heavy : ImpactStyle.Light }).catch(() => {});
+  }
+
+  /* ---- Mise en scène d'un encerclement (boucle fermée → intérieur conquis) ---- */
+  _encloseFx(tiles) {
+    for (const t of tiles) { t.capT = 0.0001; t.flash = 1; } // toutes montent d'un coup
+    const c = tiles[Math.floor(tiles.length / 2)];
+    const p = this._project(c.lat, c.lng);
+    for (let i = 0; i < 44; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const sp = 80 + Math.random() * 260;
+      this.particles.push({
+        x: p.x, y: p.y,
+        vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 60,
+        life: 0, max: 0.6 + Math.random() * 0.7,
+        size: 2 + Math.random() * 3, rgb: PLAYER.rgb,
+      });
+    }
+    this.rings.push({ lat: c.lat, lng: c.lng, life: 0, max: 0.7 });
+    this.scorePops.push({ x: p.x, y: p.y, life: 0, max: 1.1, text: "+" + tiles.length + " ZONE" + (tiles.length > 1 ? "S" : "") });
+    this._banner("Boucle fermée — territoire encerclé !");
+    this._flash();
+    document.getElementById("statZones").textContent = this.territory.zones;
+    Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => {});
   }
 
   /* ---- Boucle de rendu ---- */
@@ -334,6 +366,8 @@ export class UiService {
       } else {
         document.getElementById("boot").classList.add("hidden");
         this.follow = true;
+        this.territory.reset();                 // nouveau territoire pour la course
+        document.getElementById("statZones").textContent = "0";
         await this.location.start();
         btnRun.classList.add("running");
         label.textContent = "STOP";
