@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+  />
+  <meta name="theme-color" content="#05060d" />
+  <title>Runner Arena</title>
+</head>
+<body>
+  <!-- Le plateau : carte réelle (MapLibre) + calque de jeu WebGL (PixiJS) -->
+  <div id="stage">
+    <div id="map"></div>
+    <canvas id="game"></canvas>
+    <div id="flash"></div>
+  </div>
+
+  <!-- HUD portrait -->
+  <header id="hud-top">
+    <div class="stat">
+      <span class="stat-val" id="statZones">0</span>
+      <span class="stat-lbl">zones</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" id="statDist">0.00</span>
+      <span class="stat-lbl">km</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" id="statTime">00:00</span>
+      <span class="stat-lbl">durée</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" id="statPace">--</span>
+      <span class="stat-lbl">min/km</span>
+    </div>
+  </header>
+
+  <div id="banner" class="banner"></div>
+
+  <footer id="hud-bottom">
+    <button id="btnGpx" class="fab" title="Exporter le parcours GPX" disabled>GPX</button>
+    <button id="btnRun" class="run-btn">
+      <span class="run-ring"></span>
+      <span class="run-label">DÉMARRER</span>
+    </button>
+    <button id="btnRecenter" class="fab" title="Recentrer sur moi">◎</button>
+  </footer>
+
+  <div id="boot" class="boot">
+    <div class="boot-logo">◢◤ RUNNER<b>ARENA</b></div>
+    <div class="boot-sub">Cours pour conquérir le territoire</div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

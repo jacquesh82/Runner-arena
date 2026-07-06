@@ -1,0 +1,31 @@
+{
+  "name": "runner-arena",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Runner Arena — conquête de territoire hexagonal en courant (iOS + Android)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 8080",
+    "cap:sync": "cap sync",
+    "cap:add:android": "cap add android",
+    "cap:add:ios": "cap add ios"
+  },
+  "dependencies": {
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/filesystem": "^6.0.0",
+    "@capacitor/geolocation": "^6.0.1",
+    "@capacitor/haptics": "^6.0.0",
+    "@capacitor/screen-orientation": "^6.0.0",
+    "maplibre-gl": "^4.7.1",
+    "pixi.js": "^8.5.1"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/cli": "^6.1.2",
+    "@capacitor/ios": "^6.1.2",
+    "vite": "^5.4.8"
+  }
+}
