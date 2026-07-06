@@ -5,3 +5,4 @@ ios/
 *.tgz
 .DS_Store
 .vite/
+.dual-graph/

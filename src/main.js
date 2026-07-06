@@ -13,6 +13,23 @@ import { Capacitor } from "@capacitor/core";
 const START = [48.8566, 2.3522]; // Paris
 
 async function boot() {
+  const params = new URLSearchParams(window.location.search);
+
+  // ?replay=1 → cinématique « fin de course » sur la vraie carte (démo GPX).
+  if (params.has("replay")) {
+    const { ReplayService, parseGpx } = await import("./services/replay-service.js");
+    const src = params.get("gpx") || "/demo.gpx";
+    const track = parseGpx(await (await fetch(src)).text());
+    const replay = new ReplayService(track, {
+      container: "map",
+      map: params.get("map") || "light",
+      mode: params.get("mode") || "passes",
+    });
+    await replay.init();
+    window.__arena = { replay };
+    return;
+  }
+
   // Sur desktop web sans GPS, on force le simulateur pour une démo jouable.
   // ?sim=1 force aussi la simulation (démo / captures).
   const isNative = Capacitor.isNativePlatform();
@@ -20,7 +37,7 @@ async function boot() {
   const simulate = forceSim || (!isNative && !("geolocation" in navigator));
 
   const location = new LocationService({ simulate, start: START });
-  const ui = new UiService(location, { start: START });
+  const ui = new UiService(location, { start: START, mode: params.get("mode") || "endurance" });
   await ui.init();
 
   // Verrouillage portrait sur mobile natif.
