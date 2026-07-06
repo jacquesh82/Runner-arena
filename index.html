@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Runner Arena — Hex Territory</title>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="map"></div>
+  <canvas id="fx"></canvas>
+
+  <!-- Vignette + scanlines pour le feel "game" -->
+  <div class="vignette"></div>
+  <div class="scanlines"></div>
+
+  <!-- HUD -->
+  <header class="hud-top">
+    <div class="logo">
+      <span class="logo-mark">◢◤</span>
+      <span class="logo-text">RUNNER<b>ARENA</b></span>
+    </div>
+    <div class="scoreboard" id="scoreboard"></div>
+  </header>
+
+  <aside class="panel">
+    <h2>Ton équipe</h2>
+    <div class="team-picker" id="teamPicker"></div>
+
+    <h2>Simulation</h2>
+    <div class="controls">
+      <button id="btnSim" class="btn btn-primary">▶ Lancer les runners</button>
+      <button id="btnReset" class="btn">↺ Réinitialiser</button>
+    </div>
+
+    <div class="slider-row">
+      <label>Runners par équipe <span id="runnerCount">3</span></label>
+      <input type="range" id="runnerSlider" min="1" max="8" value="3" />
+    </div>
+
+    <div class="hint">
+      <b>Clique</b> un hexagone pour le conquérir.<br />
+      <b>Glisse</b> pour déplacer la carte · molette pour zoomer.
+    </div>
+  </aside>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="hexgrid.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
