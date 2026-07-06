@@ -2,56 +2,57 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Runner Arena — Hex Territory</title>
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
-  <link rel="stylesheet" href="styles.css" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+  />
+  <meta name="theme-color" content="#05060d" />
+  <title>Runner Arena</title>
 </head>
 <body>
-  <div id="map"></div>
-  <canvas id="fx"></canvas>
+  <!-- Le plateau : carte réelle (MapLibre) + calque de jeu WebGL (PixiJS) -->
+  <div id="stage">
+    <div id="map"></div>
+    <canvas id="game"></canvas>
+    <div id="flash"></div>
+  </div>
 
-  <!-- Vignette + scanlines pour le feel "game" -->
-  <div class="vignette"></div>
-  <div class="scanlines"></div>
-
-  <!-- HUD -->
-  <header class="hud-top">
-    <div class="logo">
-      <span class="logo-mark">◢◤</span>
-      <span class="logo-text">RUNNER<b>ARENA</b></span>
+  <!-- HUD portrait -->
+  <header id="hud-top">
+    <div class="stat">
+      <span class="stat-val" id="statZones">0</span>
+      <span class="stat-lbl">zones</span>
     </div>
-    <div class="scoreboard" id="scoreboard"></div>
+    <div class="stat">
+      <span class="stat-val" id="statDist">0.00</span>
+      <span class="stat-lbl">km</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" id="statTime">00:00</span>
+      <span class="stat-lbl">durée</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" id="statPace">--</span>
+      <span class="stat-lbl">min/km</span>
+    </div>
   </header>
 
-  <aside class="panel">
-    <h2>Fond de carte</h2>
-    <div class="basemap-picker" id="basemapPicker"></div>
+  <div id="banner" class="banner"></div>
 
-    <h2>Ton équipe</h2>
-    <div class="team-picker" id="teamPicker"></div>
+  <footer id="hud-bottom">
+    <button id="btnGpx" class="fab" title="Exporter le parcours GPX" disabled>GPX</button>
+    <button id="btnRun" class="run-btn">
+      <span class="run-ring"></span>
+      <span class="run-label">DÉMARRER</span>
+    </button>
+    <button id="btnRecenter" class="fab" title="Recentrer sur moi">◎</button>
+  </footer>
 
-    <h2>Simulation</h2>
-    <div class="controls">
-      <button id="btnSim" class="btn btn-primary">▶ Lancer les runners</button>
-      <button id="btnReset" class="btn">↺ Réinitialiser</button>
-    </div>
+  <div id="boot" class="boot">
+    <div class="boot-logo">◢◤ RUNNER<b>ARENA</b></div>
+    <div class="boot-sub">Cours pour conquérir le territoire</div>
+  </div>
 
-    <div class="slider-row">
-      <label>Runners par équipe <span id="runnerCount">3</span></label>
-      <input type="range" id="runnerSlider" min="1" max="8" value="3" />
-    </div>
-
-    <div class="hint">
-      <b>Clique</b> un hexagone pour le conquérir.<br />
-      <b>Glisse</b> pour déplacer la carte · molette pour zoomer.
-    </div>
-  </aside>
-
-  <div class="toast" id="toast"></div>
-
-  <script src="vendor/leaflet/leaflet.js"></script>
-  <script src="hexgrid.js"></script>
-  <script src="game.js"></script>
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>

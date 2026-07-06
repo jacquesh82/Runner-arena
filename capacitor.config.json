@@ -1,0 +1,22 @@
+{
+  "appId": "fr.hullu.runnerarena",
+  "appName": "Runner Arena",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "Geolocation": {
+      "permissions": ["location"]
+    },
+    "ScreenOrientation": {
+      "orientation": "portrait"
+    }
+  },
+  "android": {
+    "orientation": "portrait"
+  },
+  "ios": {
+    "orientation": "portrait"
+  }
+}

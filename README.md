@@ -1,65 +1,91 @@
-# Runner Arena — maquette de gamification territoriale
+# Runner Arena
 
-Prototype **2D avec effets "3D game"** (particules, halos néon, pulsations, ondes
-de capture) pour découper un **territoire réel** en **hexagones** à conquérir.
+**Conquiers un territoire réel découpé en hexagones… en courant.** Ta position
+GPS *est* le runner : chaque zone que tu traverses est capturée dans une explosion
+de particules. App mobile **iOS + Android** (Capacitor), en **portrait**, avec un
+rendu **WebGL « juicy »** (PixiJS) posé sur une **vraie carte** (MapLibre GL).
 
-Pensé comme un jeu de conquête à la *Ingress / Splatoon* : des **runners**
-parcourent la ville et capturent le terrain, chaque hexagone bascule à la couleur
-de l'équipe qui le prend.
+## Architecture — 2 services découplés
 
-## Lancer
+L'app est structurée autour de **deux services** qui ne communiquent que par
+événements (aucune dépendance directe) :
 
-Aucune installation. Un simple serveur statique suffit (les tuiles de carte se
-chargent depuis le réseau) :
-
-```bash
-npx http-server -p 8080 -s
-# puis ouvrir http://localhost:8080
+```
+┌─────────────────────────┐   position / stats    ┌──────────────────────────┐
+│   LocationService        │ ────────────────────▶ │      UiService           │
+│   (GPS + GPX)            │                       │   (carte + jeu WebGL)    │
+│  · suivi position         │                       │  · plateau hexagonal     │
+│  · distance / vitesse     │                       │  · capture des zones      │
+│  · enregistrement trace   │                       │  · particules / glow      │
+│  · export .gpx            │                       │  · HUD portrait           │
+└─────────────────────────┘                       └──────────────────────────┘
+        src/services/location-service.js                 src/services/ui-service.js
 ```
 
-> Ouvrir `index.html` en `file://` fonctionne aussi, mais un serveur local évite
-> les restrictions navigateur sur certaines ressources.
+- **`LocationService`** — headless. Suit le GPS (Capacitor Geolocation, fallback
+  navigateur, et simulateur si aucun capteur), calcule distance/allure, enregistre
+  la trace et l'exporte en **GPX**. Ne connaît ni la carte ni les hexagones.
+- **`UiService`** — consomme les positions : carte MapLibre inclinée (plateau
+  pseudo-3D), plateau hexagonal Pixi, capture des zones traversées, effets
+  (particules, halos additifs, pop élastique), HUD portrait.
 
-## Ce qu'on peut faire
+`src/main.js` instancie les deux et les câble.
 
-- **Clic** sur un hexagone → capture pour ton équipe + burst de particules
-- **Choisir son équipe** (AZUR / NOVA / FLUX) dans le panneau
-- **Lancer les runners** : des agents autonomes roament la carte et conquièrent
-  le territoire (règle le nombre par équipe avec le slider)
-- **Glisser / molette** : déplacer et zoomer la vraie carte, la grille reste calée
-- **Scoreboard** temps réel : nombre de zones + part de territoire par équipe
+## Stack technique
 
-## Effets "game"
+| Besoin | Choix | Pourquoi |
+| --- | --- | --- |
+| App native iOS + Android | **Capacitor 6** | Une base de code, GPS/haptique natifs, portrait natif |
+| Rendu « Royal Match » | **PixiJS 8 (WebGL)** | Particules, glow additif, easing élastique, 60 fps GPU |
+| Carte réelle | **MapLibre GL 4** | Carte vectorielle GPU, inclinable, satellite possible |
+| GPS / GPX / haptique | **@capacitor/geolocation + haptics** | Suivi live, retour tactile, export `.gpx` |
+| Build web | **Vite 5** | Dev server + bundle du WebView |
 
-- Halos néon (`shadowBlur`) et **pulsation** des zones possédées
-- **Émetteurs de particules** à chaque capture + sillage des runners
-- **Ondes de capture** concentriques
-- Ambiance cyber : carte teintée, vignette, scanlines
+> Note : Royal Match est un jeu **Unity** avec des assets d'artistes (Spine). Cette
+> stack web/WebGL en approche fortement le *ressenti* (juice, particules, rebonds)
+> et itère beaucoup plus vite ; on pourra brancher de vrais assets Spine ensuite.
+
+## Développer (web)
+
+```bash
+npm install
+npm run dev          # http://localhost:5173
+# ?sim=1 force le simulateur GPS (démo desktop) : http://localhost:5173/?sim=1
+```
+
+`npm run build` produit `dist/` (le WebView de l'app).
+
+## Générer les apps natives
+
+```bash
+npm run build
+npx cap add android      # nécessite Android Studio / SDK
+npx cap add ios          # nécessite Xcode (macOS)
+npm run cap:sync         # après chaque build
+npx cap open android     # puis Run depuis l'IDE
+npx cap open ios
+```
+
+Permissions déjà déclarées dans `capacitor.config.json` (localisation, portrait).
+Sur device, `LocationService` utilise le vrai GPS ; le simulateur ne sert qu'au
+desktop / à l'émulateur sans capteur.
 
 ## Personnaliser
 
-Tout est dans `game.js`, en haut :
-
-```js
-const CONFIG = {
-  center: [48.8566, 2.3522], // ← latitude/longitude de ta ville
-  zoom: 15,
-  hexSize: 75,               // rayon d'un hexagone en mètres
-  range: 15,                 // taille de la grille (nb d'anneaux)
-};
-```
-
-Les équipes et couleurs se règlent dans l'objet `TEAMS`.
+- **Ville de départ** : `START` dans `src/main.js` (avant le 1er fix GPS).
+- **Taille des hexagones / portée / inclinaison** : `CONFIG` en haut de
+  `src/services/ui-service.js` (`hexSize` en mètres, `pitch`, `captureRadius`).
+- **Fond de carte** : `mapStyle()` dans `ui-service.js` (Voyager par défaut ;
+  remplaçable par du satellite Esri).
 
 ## Structure
 
-| Fichier            | Rôle                                                     |
-| ------------------ | -------------------------------------------------------- |
-| `index.html`       | Page + HUD                                               |
-| `styles.css`       | Thème néon / HUD                                         |
-| `hexgrid.js`       | Maths de la grille hexagonale (axial q,r ↔ mètres ↔ lat/lng) |
-| `game.js`          | Rendu canvas, effets, runners, interactions             |
-| `vendor/leaflet/`  | Leaflet 1.9.4 (carte, embarqué localement)              |
-
-Fond de carte : [CARTO dark](https://carto.com/) sur données
-[OpenStreetMap](https://openstreetmap.org).
+```
+index.html                     coquille + HUD portrait
+src/main.js                    bootstrap : câble les 2 services
+src/hexgrid.js                 maths grille hexagonale (axial ↔ mètres ↔ lat/lng)
+src/services/location-service.js   SERVICE 1 — GPS + GPX
+src/services/ui-service.js         SERVICE 2 — carte MapLibre + jeu PixiJS
+src/styles.css                 thème néon, HUD, effets
+capacitor.config.json          config app native (portrait, permissions)
+```
