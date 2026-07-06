@@ -29,9 +29,15 @@ html, body {
   z-index: 1;
 }
 
-/* La carte en teinte "cyber" */
-.leaflet-tile {
-  filter: saturate(0.55) brightness(0.72) contrast(1.15) hue-rotate(-6deg);
+/* Teinte des tuiles selon le fond choisi (lisibilité de la géographie) */
+#map.bm-cyber .leaflet-tile {
+  filter: saturate(0.7) brightness(0.9) contrast(1.08) hue-rotate(-6deg);
+}
+#map.bm-sat .leaflet-tile {
+  filter: brightness(0.92) contrast(1.05) saturate(1.05);
+}
+#map.bm-plan .leaflet-tile {
+  filter: brightness(0.82) contrast(1.02) saturate(0.9);
 }
 
 #fx {
@@ -130,6 +136,29 @@ html, body {
   margin: 4px 0 10px;
 }
 .panel h2:not(:first-child) { margin-top: 18px; }
+
+.basemap-picker { display: flex; gap: 6px; }
+.basemap-chip {
+  flex: 1;
+  cursor: pointer;
+  padding: 8px 4px;
+  border-radius: 9px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid transparent;
+  transition: transform 0.12s, color 0.15s, border-color 0.15s, box-shadow 0.2s;
+}
+.basemap-chip .bm-ico { display: block; font-size: 16px; margin-bottom: 3px; }
+.basemap-chip:hover { transform: translateY(-2px); color: var(--text); }
+.basemap-chip.active {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  background: rgba(0,229,255,0.08);
+  box-shadow: 0 0 16px -6px var(--cyan);
+}
 
 .team-picker { display: flex; gap: 8px; }
 .team-chip {

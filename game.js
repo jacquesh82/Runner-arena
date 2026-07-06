@@ -31,15 +31,43 @@ const map = L.map("map", {
   wheelPxPerZoomLevel: 120,
 });
 
-L.tileLayer(
-  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-  {
-    subdomains: "abcd",
-    maxZoom: 19,
-    attribution:
-      '&copy; <a href="https://openstreetmap.org">OSM</a> · &copy; <a href="https://carto.com">CARTO</a>',
-  }
-).addTo(map);
+/* --- Fonds de carte : plusieurs styles pour reconnaître la géographie --- */
+const OSM_ATTR = '&copy; <a href="https://openstreetmap.org">OSM</a>';
+const BASEMAPS = {
+  plan: {
+    name: "Plan",
+    ico: "🗺️",
+    url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    opts: { subdomains: "abcd", maxZoom: 20, attribution: OSM_ATTR + " · &copy; CARTO" },
+  },
+  satellite: {
+    name: "Satellite",
+    ico: "🛰️",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    opts: { maxZoom: 20, attribution: "Imagery &copy; Esri, Maxar, Earthstar Geographics" },
+  },
+  cyber: {
+    name: "Cyber",
+    ico: "🌃",
+    url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    opts: { subdomains: "abcd", maxZoom: 20, attribution: OSM_ATTR + " · &copy; CARTO" },
+  },
+};
+
+let currentBasemap = null;
+let tileLayer = null;
+
+function setBasemap(id) {
+  const bm = BASEMAPS[id];
+  if (!bm) return;
+  if (tileLayer) map.removeLayer(tileLayer);
+  tileLayer = L.tileLayer(bm.url, bm.opts).addTo(map);
+  const el = map.getContainer();
+  el.classList.remove("bm-plan", "bm-satellite", "bm-cyber", "bm-sat");
+  el.classList.add("bm-" + (id === "satellite" ? "sat" : id));
+  currentBasemap = id;
+}
+setBasemap("plan");
 
 /* ---------------------------------------------------------------- Grille */
 const grid = HexGrid.build(CONFIG.center, CONFIG.hexSize, CONFIG.range);
@@ -205,7 +233,7 @@ function draw(now) {
       owned.push(tile);
     } else {
       hexPath(p.x, p.y, rpx * 0.94);
-      ctx.strokeStyle = "rgba(120,150,220,0.10)";
+      ctx.strokeStyle = "rgba(150,180,255,0.16)";
       ctx.lineWidth = 1;
       ctx.stroke();
     }
@@ -348,6 +376,24 @@ function buildScoreboard() {
   }).join("");
 }
 
+function buildBasemapPicker() {
+  const bp = document.getElementById("basemapPicker");
+  bp.innerHTML = Object.keys(BASEMAPS)
+    .map((id) => {
+      const b = BASEMAPS[id];
+      return `<div class="basemap-chip ${id === currentBasemap ? "active" : ""}" data-bm="${id}">
+        <span class="bm-ico">${b.ico}</span>${b.name}</div>`;
+    })
+    .join("");
+  bp.querySelectorAll(".basemap-chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      setBasemap(chip.dataset.bm);
+      bp.querySelectorAll(".basemap-chip").forEach((c) => c.classList.toggle("active", c === chip));
+      toast("Fond : " + BASEMAPS[chip.dataset.bm].name);
+    });
+  });
+}
+
 function buildTeamPicker() {
   const tp = document.getElementById("teamPicker");
   tp.innerHTML = TEAM_IDS.map((id) => {
@@ -412,5 +458,6 @@ slider.addEventListener("input", () => {
 
 /* ---------------------------------------------------------------- Go */
 buildScoreboard();
+buildBasemapPicker();
 buildTeamPicker();
 requestAnimationFrame(draw);
