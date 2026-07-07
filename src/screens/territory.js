@@ -18,7 +18,7 @@ function hexRing(lat, lng) {
 function toGeoJSON(tiles) {
   return {
     type: "FeatureCollection",
-    features: tiles.map((t) => ({ type: "Feature", geometry: { type: "Polygon", coordinates: [hexRing(t.lat, t.lng)] }, properties: {} })),
+    features: tiles.map((t) => ({ type: "Feature", geometry: { type: "Polygon", coordinates: [hexRing(t.lat, t.lng)] }, properties: { id: t.id } })),
   };
 }
 function mapStyle() {
@@ -45,6 +45,7 @@ export class TerritoryScreen {
             <div class="terr-empty-ic">🗺️</div>
             <p>Aucun territoire conquis pour l'instant.<br>Lance une course pour t'emparer de tes premières zones !</p>
           </div>
+          <div class="terr-detail" id="terr-detail" hidden></div>
         </div>
       </div>`);
     this.el = root;
@@ -85,6 +86,10 @@ export class TerritoryScreen {
       this.map.addSource("terr", { type: "geojson", data });
       this.map.addLayer({ id: "terr-fill", type: "fill", source: "terr", paint: { "fill-color": "#237749", "fill-opacity": 0.42 } });
       this.map.addLayer({ id: "terr-line", type: "line", source: "terr", paint: { "line-color": "#34ad69", "line-width": 1.4, "line-opacity": 0.9 } });
+      // Tap sur une tuile → fiche (id, owner, attributs, top 10)
+      this.map.on("click", "terr-fill", (e) => { const f = e.features && e.features[0]; if (f) this._openTile(f.properties.id); });
+      this.map.on("mouseenter", "terr-fill", () => { this.map.getCanvas().style.cursor = "pointer"; });
+      this.map.on("mouseleave", "terr-fill", () => { this.map.getCanvas().style.cursor = ""; });
     }
     let mnLng = 180, mnLat = 90, mxLng = -180, mxLat = -90;
     for (const t of tiles) {
@@ -97,5 +102,33 @@ export class TerritoryScreen {
     };
     fit();
     requestAnimationFrame(fit); // filet de sécurité après un frame de layout
+  }
+
+  async _openTile(id) {
+    const panel = this.el.querySelector("#terr-detail");
+    panel.hidden = false;
+    panel.innerHTML = `<div class="td-head"><b>Tuile</b><button class="td-close" id="td-close">✕</button></div><div class="td-id">${id}</div><div class="td-load">…</div>`;
+    panel.querySelector("#td-close").onclick = () => { panel.hidden = true; };
+    let info = null;
+    try { info = await this.ctx.backend.getTile(id); } catch (_) {}
+    if (panel.hidden) return;
+    const owner = info?.owner ? (info.owner.me ? "Toi" : info.owner.name || info.owner.id) : "Libre";
+    const attr = info?.attributes || {};
+    const when = attr.capturedAt ? new Date(attr.capturedAt).toLocaleDateString() : "—";
+    const top = (info?.top10 || []);
+    const topHtml = top.length
+      ? top.map((t, i) => `<div class="td-rank"><span>${i + 1}</span><span class="td-name">${t.player}</span><span class="td-pts">${t.points ?? t.passes ?? 0}</span></div>`).join("")
+      : `<div class="td-empty">Aucun classement pour l'instant</div>`;
+    panel.innerHTML = `
+      <div class="td-head"><b>${info?.merveille ? info.merveille.icon + " " + info.merveille.name : "Tuile"}</b><button class="td-close" id="td-close">✕</button></div>
+      <div class="td-id">${id}</div>
+      <div class="td-grid">
+        <div><label>Propriétaire</label><span class="${info?.owner?.me ? "td-me" : ""}">${owner}</span></div>
+        <div><label>Captures</label><span>${attr.count ?? 0}</span></div>
+        <div><label>Depuis</label><span>${when}</span></div>
+      </div>
+      <div class="td-sec">🏆 Top 10 de la tuile</div>
+      <div class="td-top">${topHtml}</div>`;
+    panel.querySelector("#td-close").onclick = () => { panel.hidden = true; };
   }
 }

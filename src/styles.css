@@ -446,3 +446,30 @@ html, body {
 .terr-empty[hidden] { display: none; }
 .terr-empty-ic { font-size: 46px; opacity: 0.9; }
 .terr-empty p { line-height: 1.6; font-size: 14px; }
+
+/* Fiche de tuile (au tap) */
+.terr-detail {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 5;
+  padding: 14px 16px 18px;
+  background: linear-gradient(180deg, rgba(12, 20, 36, 0.72), rgba(9, 14, 26, 0.97));
+  backdrop-filter: blur(12px); border-top: 1px solid rgba(150, 180, 255, 0.16);
+  border-radius: 16px 16px 0 0; box-shadow: 0 -12px 30px -14px #000;
+  animation: sheetUp 0.25s ease; max-height: 72%; overflow-y: auto;
+}
+.terr-detail[hidden] { display: none; }
+@keyframes sheetUp { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.td-head { display: flex; align-items: center; justify-content: space-between; font-size: 16px; font-weight: 800; }
+.td-close { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: rgba(255, 255, 255, 0.06); color: var(--text); cursor: pointer; }
+.td-id { font-size: 11px; color: var(--muted); font-family: ui-monospace, "SFMono-Regular", monospace; margin: 2px 0 12px; }
+.td-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+.td-grid > div { background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border); border-radius: 10px; padding: 9px 6px; text-align: center; }
+.td-grid label { display: block; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 3px; }
+.td-grid span { font-weight: 800; font-size: 15px; }
+.td-me { color: var(--green-light); }
+.td-sec { font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 8px; }
+.td-top { display: flex; flex-direction: column; gap: 6px; }
+.td-rank { display: flex; align-items: center; gap: 10px; background: var(--navy-soft); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; }
+.td-rank > span:first-child { width: 20px; font-weight: 900; color: var(--muted); }
+.td-name { flex: 1; font-weight: 700; }
+.td-pts { font-weight: 800; color: var(--brand-light); }
+.td-empty, .td-load { color: var(--muted); font-size: 13px; text-align: center; padding: 12px; }

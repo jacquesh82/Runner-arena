@@ -61,12 +61,13 @@ class RemoteBackend {
 
   getLeaderboard(mode = "endurance") { return this._req(`/leaderboard?mode=${encodeURIComponent(mode)}`); }
   getTiles(bbox, mode = "endurance") { return this._req(`/tiles?bbox=${bbox.join(",")}&mode=${mode}`); }
+  // État complet d'une tuile : owner + attributs + top 10.
+  getTile(id, mode = "endurance") { return this._req(`/tiles/${encodeURIComponent(id)}?mode=${mode}`); }
 
   // Délégués au mock local (pas d'endpoint serveur pour l'instant)
   getBadges() { return this._local.getBadges(); }
   getMerveilles() { return this._local.getMerveilles(); }
   claimMerveille(id) { return this._local.claimMerveille(id); }
-  getTile(id) { return this._local.getTile(id); }
   purchaseTile(id, p) { return this._local.purchaseTile(id, p); }
 }
 
@@ -105,8 +106,18 @@ class MockBackend {
   }
   async claimMerveille(id) { store.claimMerveille(id); return { ok: true, bonus: 3 }; }
 
-  /* Monétisation (stub) : prix indicatif d'une tuile selon sa valeur. */
-  async getTile(id) { return { id, owner: null, sponsor: null, forSale: true, price: 4.99 }; }
+  /* État persistant d'une tuile (owner + attributs + top 10). Cache local. */
+  async getTile(id) {
+    const t = store.getTile(id);
+    const top10 = t ? [{ player: "Toi", points: t.count, passes: t.count }] : [];
+    return {
+      id,
+      owner: t && t.owner === "me" ? { id: "me", name: "Toi", me: true } : null,
+      attributes: { count: t?.count || 0, capturedAt: t?.capturedAt || null, lat: t?.lat, lng: t?.lng },
+      top10,
+      forSale: !t, price: 4.99, // monétisation (indicatif)
+    };
+  }
   async purchaseTile(id) { return { ok: true, receiptId: "mock-" + id }; }
 
   async getLeaderboard() {

@@ -41,21 +41,30 @@ export const store = {
     save(d);
   },
 
-  /* ---- Territoire conquis (positions géographiques persistantes) ---- */
-  getTerritory() { return load().territoryTiles || []; },
-  addTerritory(tiles) {
-    if (!tiles || !tiles.length) return;
+  /* ---- État persistant PAR TUILE (clé = id global) ----
+   * Chaque tuile : { id, lat, lng, owner, count, capturedAt }.
+   * Cache local, aligné sur le modèle serveur (owner + attributs + top10). */
+  tiles() { return load().tiles || {}; },
+  getTile(id) { return (load().tiles || {})[id] || null; },
+  upsertTiles(list) {
+    if (!list || !list.length) return;
     const d = load();
-    const list = d.territoryTiles || [];
-    const seen = new Set(list.map((t) => t.k));
-    for (const t of tiles) {
-      const k = t.lat.toFixed(5) + "," + t.lng.toFixed(5);
-      if (!seen.has(k)) { seen.add(k); list.push({ lat: t.lat, lng: t.lng, k }); }
+    const t = d.tiles || {};
+    const now = Date.now();
+    for (const x of list) {
+      const e = t[x.id] || { id: x.id, lat: x.lat, lng: x.lng, count: 0 };
+      e.owner = x.owner || e.owner || "me";
+      if (x.lat != null) e.lat = x.lat;
+      if (x.lng != null) e.lng = x.lng;
+      e.count = (e.count || 0) + 1;
+      e.capturedAt = now;
+      t[x.id] = e;
     }
-    if (list.length > 5000) list.splice(0, list.length - 5000);
-    d.territoryTiles = list;
+    d.tiles = t;
     save(d);
   },
+  /* compat : liste de tuiles pour la carte du territoire */
+  getTerritory() { return Object.values(load().tiles || {}); },
 
   /* ---- Merveilles ---- */
   claimedMerveilles() { return new Set(load().merveilles || []); },

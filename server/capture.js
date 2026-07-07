@@ -6,9 +6,9 @@
 import { pool } from "./db.js";
 import { redis } from "./redis.js";
 import { rasterize, enclosed, centerLatLng, trackStats } from "./hex.js";
+import { instanceOf } from "./instances.js";
 
 const TTL_MS = 15 * 86400000;   // TTL possession : 15 jours
-const SIZE = 46;                // rayon hexagone (m) — doit matcher la config d'instance
 
 // Le challenger (course courante) prend-il la tuile déjà tenue par un adversaire ?
 function challengerWins(mode, mine, held) {
@@ -19,7 +19,12 @@ function challengerWins(mode, mine, held) {
   return mp >= hp;                             // endurance : le plus assidu
 }
 
-export async function applyRun({ instanceId = "paris", origin = [48.8566, 2.3522], player, mode = "endurance", seasonId, track }) {
+export async function applyRun({ instanceId = "paris", origin, player, mode = "endurance", seasonId, track }) {
+  // Taille + origine depuis la config d'instance → ids de tuile canoniques.
+  const inst = instanceOf(instanceId);
+  const SIZE = inst.size;
+  origin = origin || inst.origin;
+
   const { order, passes } = rasterize(track, origin, SIZE);
   const interior = enclosed(order);
   const claimed = [...new Set([...order, ...interior])];
@@ -30,6 +35,7 @@ export async function applyRun({ instanceId = "paris", origin = [48.8566, 2.3522
 
   const client = await pool.connect();
   const d = { trail: 0, steal: 0, enclosed: 0, kept: 0, tiles: [] };
+  const redisTop = [];  // maj des top 10 par tuile (Redis) après COMMIT
   try {
     await client.query("BEGIN");
 
@@ -58,17 +64,35 @@ export async function applyRun({ instanceId = "paris", origin = [48.8566, 2.3522
       }
 
       const c = centerLatLng(k, origin, SIZE);
+      const capChange = prevOwner !== player.id ? 1 : 0; // nouvelle prise ?
       await client.query(
-        `INSERT INTO tiles (instance_id, tile_id, mode, owner_id, acquired_at, expires_at, passes, best_speed, lat, lng)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+        `INSERT INTO tiles (instance_id, tile_id, mode, owner_id, acquired_at, expires_at, passes, best_speed, lat, lng, capture_count, first_owned_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$5)
          ON CONFLICT (instance_id, tile_id, mode) DO UPDATE SET
            owner_id = EXCLUDED.owner_id,
            acquired_at = EXCLUDED.acquired_at,
            expires_at = EXCLUDED.expires_at,
            passes = tiles.passes + EXCLUDED.passes,
-           best_speed = GREATEST(COALESCE(tiles.best_speed, 0), COALESCE(EXCLUDED.best_speed, 0))`,
-        [instanceId, k, mode, player.id, now, expires, myPasses, runSpeed, c.lat, c.lng]
+           best_speed = GREATEST(COALESCE(tiles.best_speed, 0), COALESCE(EXCLUDED.best_speed, 0)),
+           capture_count = tiles.capture_count + EXCLUDED.capture_count,
+           first_owned_at = COALESCE(tiles.first_owned_at, EXCLUDED.first_owned_at)`,
+        [instanceId, k, mode, player.id, now, expires, myPasses, runSpeed, c.lat, c.lng, capChange]
       );
+
+      // Détenteur (durable) + top 10 par tuile (Redis)
+      const pts = myPasses + (kind === "steal" ? 2 : 0);
+      await client.query(
+        `INSERT INTO tile_holders (instance_id, tile_id, mode, player_id, passes, captures, points, best_speed, last_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8, now())
+         ON CONFLICT (instance_id, tile_id, mode, player_id) DO UPDATE SET
+           passes = tile_holders.passes + EXCLUDED.passes,
+           captures = tile_holders.captures + EXCLUDED.captures,
+           points = tile_holders.points + EXCLUDED.points,
+           best_speed = GREATEST(COALESCE(tile_holders.best_speed, 0), COALESCE(EXCLUDED.best_speed, 0)),
+           last_at = now()`,
+        [instanceId, k, mode, player.id, myPasses, capChange, pts, runSpeed]
+      );
+      redisTop.push({ key: `t:${instanceId}:${mode}:${k}`, pts });
 
       if (prevOwner !== player.id) {
         await client.query(
@@ -92,6 +116,8 @@ export async function applyRun({ instanceId = "paris", origin = [48.8566, 2.3522
 
     // classement de saison (Redis sorted set)
     if (seasonId != null) await redis.zincrby(`lb:${seasonId}:${mode}`, score, player.id);
+    // top 10 par tuile (Redis) : cumule les points du joueur sur chaque tuile
+    for (const op of redisTop) { try { await redis.zincrby(op.key, op.pts, player.id); } catch (_) {} }
 
     return { runId: run.rows[0].id, mode, score, gained, ...d, distance_m: Math.round(stats.distance) };
   } catch (e) {

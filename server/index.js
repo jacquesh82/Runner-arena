@@ -66,5 +66,58 @@ app.get("/tiles", async (req, res) => {
   }
 });
 
+/* État complet d'une tuile : owner + attributs + top 10. id = "{instance}:{q,r}" */
+app.get("/tiles/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const mode = req.query.mode || "endurance";
+    const i = id.indexOf(":");
+    if (i < 0) return res.status(400).json({ error: "id de tuile invalide (attendu instance:q,r)" });
+    const instanceId = id.slice(0, i), tileKey = id.slice(i + 1);
+
+    const { rows } = await pool.query(
+      `SELECT t.owner_id, p.display_name AS owner_name, t.passes, t.best_speed, t.capture_count,
+              t.acquired_at, t.expires_at, t.lat, t.lng
+       FROM tiles t LEFT JOIN players p ON p.id = t.owner_id
+       WHERE t.instance_id=$1 AND t.tile_id=$2 AND t.mode=$3`,
+      [instanceId, tileKey, mode]
+    );
+    const tile = rows[0] || null;
+
+    // Top 10 : Redis (rapide) puis repli Postgres (durable).
+    let top10 = [];
+    try {
+      const z = await redis.zrange(`t:${instanceId}:${mode}:${tileKey}`, 0, 9, { rev: true, withScores: true });
+      const ids = [], score = {};
+      for (let k = 0; k < z.length; k += 2) { ids.push(z[k]); score[z[k]] = Number(z[k + 1]); }
+      if (ids.length) {
+        const pr = await pool.query(`SELECT id, display_name FROM players WHERE id = ANY($1)`, [ids]);
+        const nameById = new Map(pr.rows.map((r) => [r.id, r.display_name]));
+        top10 = ids.map((pid) => ({ player: nameById.get(pid) || pid, points: score[pid] }));
+      }
+    } catch (_) { /* Redis indispo → repli */ }
+    if (!top10.length) {
+      const hr = await pool.query(
+        `SELECT h.points, h.passes, p.display_name FROM tile_holders h JOIN players p ON p.id=h.player_id
+         WHERE h.instance_id=$1 AND h.tile_id=$2 AND h.mode=$3 ORDER BY h.points DESC LIMIT 10`,
+        [instanceId, tileKey, mode]
+      );
+      top10 = hr.rows.map((r) => ({ player: r.display_name, points: r.points, passes: r.passes }));
+    }
+
+    res.json({
+      id, instance: instanceId, tile: tileKey, mode,
+      owner: tile?.owner_id ? { id: tile.owner_id, name: tile.owner_name } : null,
+      attributes: tile
+        ? { passes: tile.passes, best_speed: tile.best_speed, capture_count: tile.capture_count, acquired_at: tile.acquired_at, expires_at: tile.expires_at, lat: tile.lat, lng: tile.lng }
+        : {},
+      top10,
+    });
+  } catch (e) {
+    console.error("[/tiles/:id]", e);
+    res.status(500).json({ error: String(e.message || e) });
+  }
+});
+
 const port = process.env.PORT || 8787;
 app.listen(port, () => console.log(`Runner Arena API — http://localhost:${port}`));

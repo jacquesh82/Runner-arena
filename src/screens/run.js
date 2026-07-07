@@ -1,4 +1,5 @@
 import { el } from "../router.js";
+import { tileIdAt } from "../tiles.js";
 
 export class RunScreen {
   constructor(ctx) { this.ctx = ctx; }
@@ -84,8 +85,9 @@ export class RunScreen {
     const track = (this.ctx.location.track || []).slice();
     const summary = this.ctx.location.endRun();
     const eng = this.ctx.engine.endRun();
-    // Persiste les tuiles conquises (pour la carte du territoire).
-    this.ctx.store.addTerritory(this.ctx.engine.ownedCenters());
+    // Persiste l'état de chaque tuile conquise (id global stable + owner).
+    const owned = this.ctx.engine.ownedCenters().map((c) => ({ id: tileIdAt(c.lat, c.lng), lat: c.lat, lng: c.lng, owner: "me" }));
+    this.ctx.store.upsertTiles(owned);
     const km = summary.distance / 1000;
     const pace = summary.distance > 20 ? summary.duration / 60 / km : null;
 
