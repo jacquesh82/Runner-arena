@@ -416,6 +416,7 @@ html, body {
 .opt-row { display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
 .opt-val { color: var(--muted); font-weight: 700; }
 .opt-mini { padding: 8px 14px; flex: none; }
+.opt-hint { color: var(--muted); font-size: 12px; line-height: 1.4; margin: -2px 0 0; }
 .opt-about { text-align: center; color: var(--muted); font-size: 12px; margin-top: 6px; }
 .switch {
   width: 48px; height: 28px; border-radius: 20px; border: none; cursor: pointer; position: relative;

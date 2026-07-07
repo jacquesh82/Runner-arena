@@ -19,6 +19,12 @@ export class OptionsScreen {
             <button class="btn-ghost" id="opt-logout">Se déconnecter</button>
           </div>
           <div class="opt-card">
+            <div class="opt-row"><span>Suivi écran éteint</span>
+              <button class="btn-ghost opt-mini" id="opt-batt">🔋 Régler</button></div>
+            <p class="opt-hint">Pour un enregistrement GPS fiable écran éteint, autorise
+              Runner Arena à ignorer l'optimisation de batterie.</p>
+          </div>
+          <div class="opt-card">
             <div class="opt-row"><span>Cinématique de démonstration</span>
               <button class="btn-ghost opt-mini" id="opt-cine">▶ Voir</button></div>
           </div>
@@ -29,6 +35,7 @@ export class OptionsScreen {
     root.querySelector("#opt-profile").addEventListener("click", () => this.ctx.router.go("profile"));
     root.querySelector("#opt-logout").addEventListener("click", () => this._logout());
     root.querySelector("#opt-cine").addEventListener("click", () => { window.location.href = window.location.pathname + "?replay=1"; });
+    root.querySelector("#opt-batt").addEventListener("click", () => this._openBattery());
     this.el = root;
     return root;
   }
@@ -49,6 +56,10 @@ export class OptionsScreen {
     const muted = localStorage.getItem("arena.muted") === "1";
     localStorage.setItem("arena.muted", muted ? "0" : "1");
     this._syncSound();
+  }
+  async _openBattery() {
+    const ok = await this.ctx.location.openBatterySettings();
+    if (!ok) alert("Disponible sur l'app mobile : Réglages → Batterie → Sans restriction.");
   }
   _logout() {
     try { this.ctx.auth && this.ctx.auth.signOut(); } catch (_) {}

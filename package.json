@@ -13,11 +13,13 @@
     "cap:add:ios": "cap add ios"
   },
   "dependencies": {
+    "@capacitor-community/background-geolocation": "^1.2.26",
     "@capacitor/app": "^6.0.0",
     "@capacitor/core": "^6.1.2",
     "@capacitor/filesystem": "^6.0.0",
     "@capacitor/geolocation": "^6.0.1",
     "@capacitor/haptics": "^6.0.0",
+    "@capacitor/motion": "^6.0.2",
     "@capacitor/screen-orientation": "^6.0.0",
     "maplibre-gl": "^4.7.1",
     "pixi.js": "^8.5.1"
