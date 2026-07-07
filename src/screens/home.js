@@ -6,7 +6,9 @@ export class HomeScreen {
     const root = el(`
       <div class="screen--solid screen--home">
         <header class="home-top">
-          <img class="home-logo" src="logo-wordmark.png" alt="Runner Arena" />
+          <div class="logo3d brand-logo">
+            <span class="mark">◢◤</span><span class="w-run">RUNNER</span><span class="w-arena">ARENA</span>
+          </div>
         </header>
 
         <section class="home-card">
@@ -26,9 +28,9 @@ export class HomeScreen {
         <button class="run-cta" id="h-run"><span>COURIR</span></button>
 
         <nav class="home-nav">
-          <button class="nav-btn" id="h-coll">🎖<span>Collection</span></button>
-          <button class="nav-btn" id="h-lead">🏆<span>Classement</span></button>
-          <button class="nav-btn" id="h-prof">👤<span>Profil</span></button>
+          <button class="nav-btn" id="h-coll"><span class="nav-ic">🎖</span><span>Collection</span></button>
+          <button class="nav-btn" id="h-lead"><span class="nav-ic">🏆</span><span>Classement</span></button>
+          <button class="nav-btn" id="h-prof"><span class="nav-ic">👤</span><span>Profil</span></button>
         </nav>
       </div>`);
     root.querySelector("#h-run").addEventListener("click", () => this.ctx.router.go("prepare"));

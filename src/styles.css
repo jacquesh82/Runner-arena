@@ -286,3 +286,86 @@ html, body {
   .summary-net span { font-size: 58px; }
   .countdown { font-size: 96px; }
 }
+
+/* ==========================================================================
+ * SYSTÈME VISUEL UNIFIÉ — cohérence de style entre toutes les pages
+ * (même identité que l'intro : navy + hexagones néon + halo orange + relief)
+ * ========================================================================== */
+:root {
+  --font-display: "Baloo 2", "Fredoka", "Quicksand", ui-rounded, "Segoe UI", system-ui, sans-serif;
+  --hex-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z' fill='%239ab4ff' fill-opacity='0.05'/%3E%3C/svg%3E");
+}
+
+/* Fond commun : halo orange en haut + texture hexagonale sur navy */
+.screen--solid,
+.screen--list {
+  background:
+    radial-gradient(125% 60% at 50% -10%, rgba(236, 122, 28, 0.13), transparent 55%),
+    var(--hex-pattern),
+    var(--bg);
+}
+
+/* Langage « panneau » partagé : léger dégradé de lumière + liseré + ombre douce */
+.home-card, .home-stats > div, .nav-btn, .sg, .ph-stat, .lb-row, .hist-row,
+.mv-row, .badge, .tally, .co-tab, .pause-card > .btn-ghost {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 42%),
+    var(--navy-soft);
+  border: 1px solid rgba(150, 180, 255, 0.14);
+  box-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Titres & grands nombres en police display arrondie (identité intro) */
+.logo3d, .list-top h1, .summary-net span, .countdown, .hs-val, .sg span,
+.ph-stat span, .combat-title, .tally span, .rank-badge, .co-tab { font-family: var(--font-display); }
+
+/* ---- Logo 3D (repris de l'intro) ---- */
+.logo3d {
+  display: inline-block; font-family: var(--font-display);
+  font-size: clamp(22px, 7.6vw, 34px); font-weight: 900; letter-spacing: 0.5px;
+  white-space: nowrap; line-height: 1; transform: rotateX(12deg); transform-style: preserve-3d;
+}
+.logo3d .mark, .logo3d .w-run, .logo3d .w-arena {
+  -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+}
+.logo3d .w-run {
+  background-image: linear-gradient(180deg, #fff 0%, #eaf3ff 42%, #bccef2 62%, #91a8d8 100%);
+  text-shadow: 0 1px 0 #9fb2d6, 0 2px 0 #8ba0c8, 0 3px 0 #778cb4, 0 4px 0 #63789f, 0 9px 12px rgba(0, 0, 0, 0.5);
+}
+.logo3d .w-arena {
+  background-image: linear-gradient(180deg, #ffe8cf 0%, #ffab4d 44%, #ec7a1c 66%, #c85f12 100%);
+  text-shadow: 0 1px 0 #f09a3a, 0 2px 0 #d17a2a, 0 3px 0 #c85f12, 0 4px 0 #a84f0e, 0 8px 20px rgba(236, 122, 28, 0.4);
+}
+.logo3d .mark {
+  background-image: linear-gradient(180deg, #ffe8cf, #ec7a1c 70%, #c85f12);
+  font-size: 0.74em; letter-spacing: -3px; margin-right: 8px;
+  text-shadow: 0 2px 0 #c85f12, 0 4px 0 #8f430c, 0 6px 12px rgba(0, 0, 0, 0.5);
+}
+.brand-logo { animation: logo-float 4.6s ease-in-out infinite; }
+@keyframes logo-float {
+  0%, 100% { transform: rotateX(12deg) translateY(0); }
+  50% { transform: rotateX(12deg) translateY(-4px); }
+}
+
+/* ---- QG / Accueil : relief & vie ---- */
+.home-top { padding-top: 12px; }
+.rank-badge {
+  box-shadow: 0 8px 20px -6px rgba(236, 122, 28, 0.65), inset 0 -3px 8px rgba(0, 0, 0, 0.25);
+}
+.nav-btn { gap: 6px; transition: transform 0.12s, box-shadow 0.2s, border-color 0.2s; }
+.nav-btn:hover, .nav-btn:active { transform: translateY(-3px); border-color: rgba(236, 122, 28, 0.5); }
+.nav-ic {
+  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; font-size: 20px;
+  background: radial-gradient(circle at 50% 35%, rgba(236, 122, 28, 0.22), rgba(236, 122, 28, 0.06));
+  box-shadow: inset 0 0 0 1px rgba(236, 122, 28, 0.25);
+}
+/* anneau lumineux tournant derrière le bouton COURIR */
+.run-cta::before {
+  content: ""; position: absolute; inset: -14px; border-radius: 50%; z-index: -1;
+  background: conic-gradient(from 0deg, transparent, rgba(255, 171, 77, 0.55), transparent 40%);
+  filter: blur(6px); animation: spin 5.5s linear infinite;
+}
+.run-cta { z-index: 0; }
+
+/* En-têtes de liste plus affirmés */
+.list-top h1 { letter-spacing: 0.4px; }
