@@ -1,4 +1,6 @@
-/* Persistance légère (localStorage) : onboarding, profil, historique. */
+/* Cache local (localStorage) — miroir du backend distant.
+ * En production, ces données sont la source de vérité côté serveur ;
+ * ici on persiste localement pour que l'app tourne en démo hors-ligne. */
 const KEY = "runnerarena.v1";
 
 function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } }
@@ -21,13 +23,31 @@ export const store = {
   profile() {
     const d = load();
     const xp = d.xp || 0;
-    const level = 1 + Math.floor(xp / 100);
     return {
-      xp,
-      level,
-      xpInLevel: xp % 100,
+      xp, level: 1 + Math.floor(xp / 100), xpInLevel: xp % 100,
       territory: Math.max(0, d.territory || 0),
       runs: d.runs || [],
     };
+  },
+
+  /* ---- Badges ---- */
+  badges() { return new Set(load().badges || []); },
+  awardBadges(ids) {
+    if (!ids || !ids.length) return;
+    const d = load();
+    const set = new Set(d.badges || []);
+    ids.forEach((id) => set.add(id));
+    d.badges = [...set];
+    save(d);
+  },
+
+  /* ---- Merveilles ---- */
+  claimedMerveilles() { return new Set(load().merveilles || []); },
+  claimMerveille(id) {
+    const d = load();
+    const set = new Set(d.merveilles || []);
+    set.add(id);
+    d.merveilles = [...set];
+    save(d);
   },
 };

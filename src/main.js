@@ -8,6 +8,7 @@ import { Capacitor } from "@capacitor/core";
 import { LocationService } from "./services/location-service.js";
 import { GameEngine } from "./game/game-engine.js";
 import { store } from "./store.js";
+import { createBackend } from "./api/backend.js";
 import { Router } from "./router.js";
 import { SplashScreen } from "./screens/splash.js";
 import { OnboardingScreen } from "./screens/onboarding.js";
@@ -18,6 +19,7 @@ import { CombatScreen } from "./screens/combat.js";
 import { SummaryScreen } from "./screens/summary.js";
 import { LeaderboardScreen } from "./screens/leaderboard.js";
 import { ProfileScreen } from "./screens/profile.js";
+import { CollectionScreen } from "./screens/collection.js";
 
 const START = [48.8566, 2.3522]; // Paris — position de repli avant le 1er fix GPS
 
@@ -28,9 +30,11 @@ async function boot() {
 
   const location = new LocationService({ simulate, start: START });
   const engine = new GameEngine(location, { start: START });
+  engine.setClaimedMerveilles(store.claimedMerveilles());
   await engine.init();
 
-  const ctx = { location, engine, store, START };
+  const backend = createBackend();
+  const ctx = { location, engine, store, backend, START };
   const router = new Router(document.getElementById("screens"), ctx);
   ctx.router = router;
 
@@ -43,6 +47,7 @@ async function boot() {
   router.register("summary", new SummaryScreen(ctx));
   router.register("leaderboard", new LeaderboardScreen(ctx));
   router.register("profile", new ProfileScreen(ctx));
+  router.register("collection", new CollectionScreen(ctx));
 
   router.go("splash");
 

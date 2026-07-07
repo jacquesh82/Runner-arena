@@ -43,13 +43,16 @@ export class RunScreen {
     this.el.querySelector("#r-dist").textContent = "0.00";
     this.el.querySelector("#r-pace").textContent = "--";
     this.el.querySelector("#r-pauseov").classList.remove("show");
+    this._onMerveille = (e) => this._banner(e.detail.icon + " Merveille : " + e.detail.name + " !");
     this.ctx.location.addEventListener("stats", this._onStats);
     this.ctx.engine.addEventListener("capture", this._onCapture);
+    this.ctx.engine.addEventListener("merveille", this._onMerveille);
     this._timer = setInterval(() => this._tick(), 250);
   }
   leave() {
     this.ctx.location.removeEventListener("stats", this._onStats);
     this.ctx.engine.removeEventListener("capture", this._onCapture);
+    this.ctx.engine.removeEventListener("merveille", this._onMerveille);
     clearInterval(this._timer);
   }
 
@@ -79,10 +82,11 @@ export class RunScreen {
   _finish() {
     const zones = this.ctx.engine.zones;
     const summary = this.ctx.location.endRun();
-    this.ctx.engine.endRun();
+    const eng = this.ctx.engine.endRun();
     const pace = summary.distance > 20 ? summary.duration / 60 / (summary.distance / 1000) : null;
     this.ctx.router.go("combat", {
       zones,
+      merveilles: eng.merveilles,
       distance: summary.distance,
       duration: summary.duration,
       pace,

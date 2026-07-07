@@ -1,4 +1,5 @@
 import { el } from "../router.js";
+import { BADGE_BY_ID, RARITY } from "../data/badges.js";
 
 export class SummaryScreen {
   constructor(ctx) { this.ctx = ctx; }
@@ -23,6 +24,8 @@ export class SummaryScreen {
           <span class="summary-total">Territoire total : <b id="s-total">0</b></span>
         </div>
 
+        <div class="summary-badges" id="s-badges"></div>
+
         <div class="summary-actions">
           <button class="btn-ghost" id="s-gpx">⬇ GPX</button>
           <button class="btn-ghost" id="s-share">↗ Partager</button>
@@ -36,12 +39,9 @@ export class SummaryScreen {
     return root;
   }
 
-  enter(data) {
+  async enter(data) {
     this.data = data;
     const km = (data.distance || 0) / 1000;
-    const net = Math.max(0, data.net || 0);
-    const xp = net * 12 + (data.zones || 0) * 6 + (data.won || 0) * 10;
-    this._xp = xp;
 
     const q = (id) => this.el.querySelector(id);
     q("#s-net").textContent = data.net ?? 0;
@@ -52,14 +52,26 @@ export class SummaryScreen {
     const mm = Math.floor((data.duration || 0) / 60), ss = Math.floor((data.duration || 0) % 60);
     q("#s-time").textContent = String(mm).padStart(2, "0") + ":" + String(ss).padStart(2, "0");
     q("#s-pace").textContent = data.pace && isFinite(data.pace) ? data.pace.toFixed(1) : "--";
-    q("#s-xp").textContent = xp;
+    q("#s-badges").innerHTML = "";
 
-    // Persiste la course (une fois)
-    this.ctx.store.addRun({
-      date: Date.now(), zones: data.zones || 0, km, duration: data.duration || 0,
-      pace: data.pace || null, won: data.won || 0, lost: data.lost || 0, net: data.net || 0, xp,
+    // Soumission au backend : XP, badges, territoire (source de vérité)
+    const res = await this.ctx.backend.submitRun({
+      zones: data.zones || 0, km, duration: data.duration || 0, pace: data.pace || null,
+      won: data.won || 0, lost: data.lost || 0, net: data.net || 0, merveilles: data.merveilles || [],
     });
-    q("#s-total").textContent = this.ctx.store.profile().territory;
+    q("#s-xp").textContent = res.xpGained;
+    q("#s-total").textContent = res.territory;
+    this._renderBadges(res.badgesEarned || []);
+  }
+
+  _renderBadges(ids) {
+    if (!ids.length) return;
+    const box = this.el.querySelector("#s-badges");
+    box.innerHTML = `<div class="sb-title">🎉 Nouveau${ids.length > 1 ? "x" : ""} badge${ids.length > 1 ? "s" : ""} !</div>
+      <div class="sb-row">${ids.map((id) => {
+        const b = BADGE_BY_ID[id]; if (!b) return "";
+        return `<div class="sb-badge" style="--rc:${RARITY[b.rarity].color}"><span>${b.icon}</span><small>${b.name}</small></div>`;
+      }).join("")}</div>`;
   }
 
   async _gpx() {

@@ -17,6 +17,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { Application, Graphics } from "pixi.js";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { buildGrid, mPerDegLng, hexKey } from "../hexgrid.js";
+import { MERVEILLES } from "../data/merveilles.js";
 
 const CONFIG = { hexSize: 55, range: 14, zoom: 16.5, pitch: 38 };
 
@@ -46,7 +47,11 @@ export class GameEngine extends EventTarget {
     this.scorePops = [];
     this.zones = 0;
     this.t = 0;
+    this.claimedMerveilles = new Set();
+    this.merveillesThisRun = [];
   }
+
+  setClaimedMerveilles(set) { this.claimedMerveilles = new Set(set); }
 
   async init() {
     this.map = new maplibregl.Map({
@@ -90,6 +95,11 @@ export class GameEngine extends EventTarget {
       tile._corners = cs;
     }
     this._seedRival();
+    // Pose les merveilles (quartiers/monuments) sur leurs tuiles
+    for (const m of MERVEILLES) {
+      const t = this.grid.tiles.get(hexKey(m.q, m.r));
+      if (t) t.merveille = { ...m, claimed: this.claimedMerveilles.has(m.id) };
+    }
     this.zones = 0;
     this.player = { lat: center[0], lng: center[1], heading: 0, has: false };
   }
@@ -108,8 +118,8 @@ export class GameEngine extends EventTarget {
   }
 
   /* ---- Course -------------------------------------------------------- */
-  beginRun() { this.capturing = true; this.follow = true; }
-  endRun() { this.capturing = false; return { zones: this.zones }; }
+  beginRun() { this.capturing = true; this.follow = true; this.merveillesThisRun = []; }
+  endRun() { this.capturing = false; return { zones: this.zones, merveilles: this.merveillesThisRun.slice() }; }
   recenter() { this.follow = true; if (this.player.has) this.map.easeTo({ center: [this.player.lng, this.player.lat], duration: 500 }); }
 
   _onPosition(p) {
@@ -132,6 +142,20 @@ export class GameEngine extends EventTarget {
     Haptics.impact({ style: stolen ? ImpactStyle.Heavy : ImpactStyle.Light }).catch(() => {});
     this._flash();
     this.dispatchEvent(new CustomEvent("capture", { detail: { zones: this.zones, stolen } }));
+
+    // Revendication d'une merveille (quartier / monument)
+    const mv = tile.merveille;
+    if (mv && !mv.claimed) {
+      mv.claimed = true;
+      this.claimedMerveilles.add(mv.id);
+      this.merveillesThisRun.push(mv.id);
+      this._burst(p.x, p.y, [242, 196, 0], 64);
+      this.rings.push({ lat: tile.lat, lng: tile.lng, life: 0, max: 0.75 });
+      this.scorePops.push({ x: p.x, y: p.y - 26, life: 0, max: 1.3, text: mv.icon + " " + mv.name });
+      this._shake();
+      Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => {});
+      this.dispatchEvent(new CustomEvent("merveille", { detail: { id: mv.id, name: mv.name, icon: mv.icon } }));
+    }
   }
 
   _burst(x, y, rgb, n) {
@@ -191,6 +215,15 @@ export class GameEngine extends EventTarget {
     s.classList.remove("shake"); void s.offsetWidth; s.classList.add("shake");
   }
 
+  _drawMerveille(cx, cy, rpx, mv) {
+    const R = Math.max(9, rpx * 0.32);
+    const spin = mv.claimed ? -Math.PI / 2 : -Math.PI / 2 + this.t * 0.7;
+    const col = mv.claimed ? PLAYER.color : RING;
+    this.gGlow.poly(starPoints(cx, cy, R * 1.3, spin)).fill({ color: col, alpha: 0.25 });
+    this.gFx.poly(starPoints(cx, cy, R, spin)).fill({ color: col, alpha: 0.95 });
+    this.gFx.poly(starPoints(cx, cy, R * 0.48, spin)).fill({ color: 0xffffff, alpha: 0.5 });
+  }
+
   /* ---- Projections --------------------------------------------------- */
   _project(lat, lng) { return this.map.project([lng, lat]); }
   _mToPx(mx, my) {
@@ -220,7 +253,17 @@ export class GameEngine extends EventTarget {
       const pts = [];
       for (const [la, ln] of tile._corners) { const pp = this.map.project([ln, la]); pts.push(pp.x, pp.y); }
 
-      if (!tile.owner) { this.gGrid.poly(pts).stroke({ width: 1, color: 0x9ab4ff, alpha: 0.16 }); continue; }
+      const mv = tile.merveille;
+      if (!tile.owner) {
+        if (mv) {
+          const gp = 0.5 + 0.5 * Math.sin(this.t * 2.5 + tile.phase * 6.28);
+          this.gGrid.poly(pts).stroke({ width: 2, color: RING, alpha: 0.45 + gp * 0.35 });
+        } else {
+          this.gGrid.poly(pts).stroke({ width: 1, color: 0x9ab4ff, alpha: 0.16 });
+        }
+        if (mv) this._drawMerveille(c.x, c.y, CONFIG.hexSize * ppm, mv);
+        continue;
+      }
 
       const team = tile.owner === "me" ? OWN : RIVAL;
       const lineCol = team.color, fillCol = team.fill || team.color;
@@ -234,6 +277,7 @@ export class GameEngine extends EventTarget {
       this.gFill.poly(spts).fill({ color: fillCol, alpha: 0.32 + pulse * 0.12 });
       this.gFill.poly(spts).stroke({ width: 1.8, color: lineCol, alpha: 0.7 + pulse * 0.3 });
       if (tile.flash > 0) this.gFx.poly(spts).fill({ color: 0xffffff, alpha: tile.flash * 0.6 });
+      if (mv) this._drawMerveille(c.x, c.y, CONFIG.hexSize * ppm, mv);
     }
 
     for (let i = this.rings.length - 1; i >= 0; i--) {
@@ -293,4 +337,10 @@ function scalePoly(pts, cx, cy, s) {
   const out = new Array(pts.length);
   for (let i = 0; i < pts.length; i += 2) { out[i] = cx + (pts[i] - cx) * s; out[i + 1] = cy + (pts[i + 1] - cy) * s; }
   return out;
+}
+
+function starPoints(cx, cy, R, rot) {
+  const pts = [], r2 = R * 0.45;
+  for (let i = 0; i < 10; i++) { const rr = i % 2 ? r2 : R, a = rot + (i * Math.PI) / 5; pts.push(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); }
+  return pts;
 }
