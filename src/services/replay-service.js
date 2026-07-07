@@ -37,6 +37,19 @@ const PLAYERS = {
 };
 const DAY = 86400000;
 
+// Points d'intérêt du secteur (démo). Extensible à OSM/Overpass : remplacer
+// cette liste par fetchPOIs(bbox). Capturer la tuile d'un POI débloque son badge.
+const POIS = [
+  { name: "Parc Montsouris",        lat: 48.8225, lng: 2.3378, emoji: "🏞️" },
+  { name: "Cité Universitaire",     lat: 48.8213, lng: 2.3382, emoji: "🎓" },
+  { name: "Réservoir de Montsouris", lat: 48.8262, lng: 2.3372, emoji: "💧" },
+  { name: "Square de Montsouris",   lat: 48.8235, lng: 2.3405, emoji: "🌳" },
+  { name: "Cité Florale",           lat: 48.8250, lng: 2.3430, emoji: "🌸" },
+  { name: "Place Denfert-Rochereau", lat: 48.8339, lng: 2.3324, emoji: "🦁" },
+  { name: "Prison de la Santé",     lat: 48.8347, lng: 2.3417, emoji: "🏛️" },
+  { name: "Stade Charléty",         lat: 48.8192, lng: 2.3459, emoji: "🏟️" },
+];
+
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function haversine(a, b) {
   const R = 6371000, toR = Math.PI / 180;
@@ -342,6 +355,33 @@ export class ReplayService {
     this._rInit = meta.filter(m=>m.owned && m.colA===MAG).length;
 
     this.stats = this._computeStats(runTime);
+    this._computeBadges();
+  }
+
+  // Collection : badges de lieux (POI capturés) + badge de quartier.
+  _computeBadges() {
+    this._poiByTile = new Map();
+    this.badges = POIS.map((p) => {
+      const t = this.grid.tileAt(p.lat, p.lng);
+      const rec = t ? this.tileRec.get(t.q + "," + t.r) : null;
+      const earned = !!(rec && rec.owned && rec.owner === "me");
+      const b = { ...p, kind: "poi", earned, tileKey: rec ? rec.key : null };
+      if (rec && earned) this._poiByTile.set(rec.key, b);
+      return b;
+    });
+    // badge de quartier : ≥ 55 % du territoire affiché est à moi
+    const owned = this.meta.filter((m) => m.owned).length;
+    const mine = this.meta.filter((m) => m.owned && m.owner === "me").length;
+    this.badges.push({ name: "Quartier Montsouris", emoji: "🏙️", kind: "district", earned: owned > 0 && mine / owned >= 0.55 });
+    this._badgesToasted = new Set();
+  }
+
+  _toast(b) {
+    const el = this.toastEl; if (!el) return;
+    el.innerHTML = `<span class="em">${b.emoji}</span><span><small>Lieu découvert</small>${b.name}</span>`;
+    el.classList.add("show");
+    clearTimeout(this._toastT);
+    this._toastT = setTimeout(() => el.classList.remove("show"), 2600);
   }
 
   // Bilan de course : données techniques (issues du GPX) + prise/perte de territoire.
@@ -648,6 +688,8 @@ export class ReplayService {
       this.hexo.root.querySelectorAll(".hexo-confetti").forEach(e => e.remove());
     }
     if (this.nyx) { this.nyx.inner.className = "nyx-inner guard"; this.nyx.bubble.classList.remove("show"); }
+    if (this._badgesToasted) this._badgesToasted.clear();
+    if (this.toastEl) this.toastEl.classList.remove("show");
     const stage = document.getElementById("stage"); if (stage) stage.classList.remove("shake");
   }
 
@@ -698,8 +740,14 @@ export class ReplayService {
       let stole = false, took = 0;
       for (const m of this.meta) {
         if (!m.owned) continue;
+        const evt = m.stolen ? m.flip : m.evt;
         if (m.stolen && m.flip > prevT && m.flip <= t) stole = true;
         else if (m.evt > prevT && m.evt <= t) took++;
+        // découverte d'un lieu (POI) sur la tuile capturée
+        if (evt > prevT && evt <= t && this._poiByTile?.has(m.key) && !this._badgesToasted.has(m.key)) {
+          this._badgesToasted.add(m.key);
+          this._toast(this._poiByTile.get(m.key));
+        }
       }
       if (stole) {
         this._hexoBubble("Vol !", 750);
@@ -816,6 +864,9 @@ export class ReplayService {
     const s = this.stats; if (!this.recapEl || !s) return;
     const mmss = (sec) => { const m = Math.floor(sec/60), ss = Math.round(sec%60); return m + " min " + String(ss).padStart(2,"0"); };
     const pace = (p) => { const m = Math.floor(p), ss = Math.round((p-m)*60); return m + ":" + String(ss).padStart(2,"0"); };
+    const badges = this.badges || [];
+    const earned = badges.filter((b) => b.earned).length;
+    const badgesHtml = badges.map((b) => `<div class="rc-badge ${b.earned ? "earned" : ""}"><span class="be">${b.emoji}</span><span class="bn">${b.name}</span></div>`).join("");
     this.recapPanel.innerHTML = `
       <div class="rc-eyebrow">Runner Arena · Bilan de course</div>
       <h2>Course terminée</h2>
@@ -840,6 +891,8 @@ export class ReplayService {
         <div class="rc-row"><span class="k"><i style="background:#ff2e86"></i>Bastion de Nyx restant</span><span class="v">${s.rival}</span></div>
         <div class="rc-row"><span class="k">Surface contrôlée</span><span class="v">${s.surfaceKm2.toFixed(2)} km²</span></div>
       </div>
+      <div class="rc-sec">Collection · ${earned}/${badges.length} lieux découverts</div>
+      <div class="rc-badges">${badgesHtml}</div>
       <div class="rc-note">⏳ Tes zones expirent dans <b>${this._fmtRemaining(s.runTime + TTL_DAYS*DAY - Date.now())}</b> — recours avant pour les garder.<br>Durée, allure et calories sont estimées (ce GPX n'a pas d'horodatage par point GPS).</div>
       <div class="rc-actions">
         <button id="rc-close">Carte</button>
@@ -1023,6 +1076,23 @@ export class ReplayService {
       #rp-modes button b{font-size:12px;font-weight:800;letter-spacing:.02em}
       #rp-modes button small{font-size:8px;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
       #rp-modes button.on{background:linear-gradient(92deg,#28e8ff,#7ff0ff);color:#062028;box-shadow:0 2px 14px rgba(40,232,255,.35)}
+      /* toast de découverte de lieu */
+      #rp-toast{position:absolute;z-index:7;top:calc(env(safe-area-inset-top,0) + 132px);left:50%;transform:translate(-50%,-8px);
+        background:rgba(12,16,28,.84);backdrop-filter:blur(10px);border:1px solid rgba(40,232,255,.45);border-radius:100px;
+        padding:9px 18px;color:#eafcff;font-family:"Helvetica Neue",Arial,sans-serif;font-weight:700;font-size:13px;
+        display:flex;align-items:center;gap:10px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:0 8px 26px rgba(0,0,0,.32)}
+      #rp-toast.show{opacity:1;transform:translate(-50%,0)}
+      #rp-toast .em{font-size:19px}
+      #rp-toast small{display:block;font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:#28e8ff;font-weight:700}
+      body.rp-light #rp-toast{background:rgba(255,255,255,.92);color:#1a2036;border-color:rgba(40,180,220,.5)}
+      /* collection dans le bilan */
+      #rp-recap .rc-badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px}
+      #rp-recap .rc-badge{display:flex;flex-direction:column;align-items:center;gap:5px;padding:11px 6px;border-radius:12px;background:#121728;border:1px solid rgba(124,136,176,.14);text-align:center}
+      #rp-recap .rc-badge.earned{border-color:rgba(40,232,255,.5);box-shadow:0 0 16px rgba(40,232,255,.14)}
+      #rp-recap .rc-badge .be{font-size:24px;filter:grayscale(1);opacity:.35}
+      #rp-recap .rc-badge.earned .be{filter:none;opacity:1}
+      #rp-recap .rc-badge .bn{font-size:9px;line-height:1.25;color:#8b97bd}
+      #rp-recap .rc-badge.earned .bn{color:#cdd8f5}
       /* fiche de tuile */
       #rp-info{position:absolute;z-index:7;left:18px;top:120px;width:min(280px,80vw);
         background:rgba(12,16,28,.82);backdrop-filter:blur(12px);border:1px solid rgba(124,136,176,.28);
@@ -1212,6 +1282,7 @@ export class ReplayService {
         <div class="row"><span class="k">Expire dans</span><span class="v cd" id="rp-info-cd"></span></div>
         <div class="extra" id="rp-info-extra"></div>
       </div>
+      <div id="rp-toast"></div>
       <div id="rp-recap"><div class="panel" id="rp-recap-panel"></div></div>`;
     document.body.appendChild(wrap);
     this.hudEl = {
@@ -1234,6 +1305,7 @@ export class ReplayService {
     };
     this.recapEl = wrap.querySelector("#rp-recap");
     this.recapPanel = wrap.querySelector("#rp-recap-panel");
+    this.toastEl = wrap.querySelector("#rp-toast");
     wrap.querySelector("#rp-info-x").addEventListener("click", () => this._selectTile(null));
     wrap.querySelector("#rp-replay").addEventListener("click", () => this.replay());
 
