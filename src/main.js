@@ -101,7 +101,7 @@ async function boot() {
     } catch (_) {}
   }
 
-  window.__arena = { location, engine, router, store, profile };
+  window.__arena = { location, engine, router, store, backend, profile };
 }
 
 boot().catch((e) => console.error("Boot error:", e));

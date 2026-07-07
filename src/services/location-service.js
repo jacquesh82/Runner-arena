@@ -17,6 +17,7 @@
 
 import { Capacitor } from "@capacitor/core";
 import { Geolocation } from "@capacitor/geolocation";
+import { buildGpx, saveGpx } from "../gpx.js";
 
 const M_PER_DEG_LAT = 111320;
 const mPerDegLng = (lat) => 111320 * Math.cos((lat * Math.PI) / 180);
@@ -159,36 +160,13 @@ export class LocationService extends EventTarget {
     return dt > 0 ? haversine(a, b) / dt : 0;
   }
 
-  /* ---- Export GPX ---------------------------------------------------- */
+  /* ---- Export GPX (construit depuis la trace GPS réelle) ------------- */
   buildGpx(name = "Runner Arena") {
-    const pts = this.track.map((p) =>
-      `      <trkpt lat="${p.lat.toFixed(6)}" lon="${p.lng.toFixed(6)}">` +
-      (p.ele != null ? `<ele>${p.ele.toFixed(1)}</ele>` : "") +
-      `<time>${new Date(p.ts).toISOString()}</time></trkpt>`
-    ).join("\n");
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="Runner Arena" xmlns="http://www.topografix.com/GPX/1/1">
-  <metadata><name>${name}</name></metadata>
-  <trk><name>${name}</name><trkseg>
-${pts}
-  </trkseg></trk>
-</gpx>`;
+    return buildGpx(this.track, name);
   }
 
   async exportGpx() {
-    const gpx = this.buildGpx();
-    const fname = `runner-arena-${this._stamp()}.gpx`;
-    if (Capacitor.isNativePlatform()) {
-      const { Filesystem, Directory, Encoding } = await import("@capacitor/filesystem");
-      await Filesystem.writeFile({ path: fname, data: gpx, directory: Directory.Documents, encoding: Encoding.UTF8 });
-      return { native: true, path: fname };
-    }
-    const blob = new Blob([gpx], { type: "application/gpx+xml" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = fname; a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    return { native: false, path: fname };
+    return saveGpx(this.buildGpx(), `runner-arena-${this._stamp()}.gpx`);
   }
 
   _emit(type, detail) { this.dispatchEvent(new CustomEvent(type, { detail })); }

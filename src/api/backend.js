@@ -78,6 +78,7 @@ class MockBackend {
     store.addRun({
       date: Date.now(), zones: run.zones || 0, km: run.km || 0, duration: run.duration || 0,
       pace: run.pace || null, won: run.won || 0, lost: run.lost || 0, net: run.net || 0, xp,
+      track: run.track || null,  // trace GPS réelle → historique + export GPX
     });
     (run.merveilles || []).forEach((id) => store.claimMerveille(id));
 

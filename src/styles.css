@@ -242,6 +242,9 @@ html, body {
 .hist-net { font-weight: 800; color: var(--green-light); }
 .hist-net small { color: var(--muted); }
 .hist-meta { margin-left: auto; font-size: 12px; color: var(--muted); }
+.hist-gpx { border: 1px solid var(--border); background: var(--bg); color: var(--brand-light);
+  font-weight: 800; font-size: 11px; border-radius: 9px; padding: 6px 9px; cursor: pointer; white-space: nowrap; }
+.hist-gpx:active { transform: scale(0.94); }
 .empty { color: var(--muted); text-align: center; padding: 30px; }
 
 /* ---------- Résumé : badges débloqués ---------- */

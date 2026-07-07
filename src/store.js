@@ -1,6 +1,8 @@
 /* Cache local (localStorage) — miroir du backend distant.
  * En production, ces données sont la source de vérité côté serveur ;
  * ici on persiste localement pour que l'app tourne en démo hors-ligne. */
+import { downsampleTrack } from "./gpx.js";
+
 const KEY = "runnerarena.v1";
 
 function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } }
@@ -13,7 +15,13 @@ export const store = {
   addRun(run) {
     const d = load();
     d.runs = d.runs || [];
-    d.runs.unshift(run);
+    // La trace GPS réelle est stockée (allégée) dans l'historique pour
+    // re-générer le GPX à tout moment depuis le profil.
+    const track = run.track && run.track.length ? downsampleTrack(run.track, 600) : null;
+    const stored = { ...run };
+    if (track) { stored.track = track; stored.points = run.track.length; }
+    delete stored._raw;
+    d.runs.unshift(stored);
     if (d.runs.length > 50) d.runs.length = 50;
     d.territory = (d.territory || 0) + (run.net || 0);
     d.xp = (d.xp || 0) + (run.xp || 0);
