@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 720" font-family="'Segoe UI',Inter,system-ui,sans-serif">
+  <defs>
+    <marker id="ao" markerWidth="12" markerHeight="12" refX="8" refY="3.5" orient="auto"><path d="M0,0 L8,3.5 L0,7 Z" fill="#ec7a1c"/></marker>
+    <marker id="am" markerWidth="12" markerHeight="12" refX="8" refY="3.5" orient="auto"><path d="M0,0 L8,3.5 L0,7 Z" fill="#6b7ba0"/></marker>
+    <marker id="ay" markerWidth="12" markerHeight="12" refX="8" refY="3.5" orient="auto"><path d="M0,0 L8,3.5 L0,7 Z" fill="#f2c400"/></marker>
+    <linearGradient id="run" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b3a2b"/><stop offset="1" stop-color="#14273a"/></linearGradient>
+    <linearGradient id="vs" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ec7a1c"/><stop offset="1" stop-color="#ff2d95"/></linearGradient>
+    <linearGradient id="vsf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c2030"/><stop offset="1" stop-color="#14273a"/></linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1080" height="720" fill="#0c1a2b"/>
+
+  <text x="40" y="44" fill="#eaf0ff" font-size="24" font-weight="800">Runner Arena — Enchaînement des écrans</text>
+  <text x="40" y="68" fill="#8393b0" font-size="14">Boucle de jeu : QG → Course → Combat de territoire → Résumé → QG</text>
+
+  <!-- ================= ARROWS ================= -->
+  <path d="M204,118 C232,116 236,168 246,178" stroke="#6b7ba0" stroke-width="2.5" fill="none" marker-end="url(#am)"/>
+  <path d="M122,172 L122,236" stroke="#f2c400" stroke-width="2.5" stroke-dasharray="6 5" fill="none" marker-end="url(#ay)"/>
+  <text x="132" y="210" fill="#f2c400" font-size="12">1er lancement</text>
+  <path d="M204,272 C236,272 238,222 246,212" stroke="#6b7ba0" stroke-width="2.5" fill="none" marker-end="url(#am)"/>
+
+  <path d="M444,176 C474,168 476,128 498,124" stroke="#ec7a1c" stroke-width="3" fill="none" marker-end="url(#ao)"/>
+  <text x="450" y="152" fill="#ec7a1c" font-size="12" font-weight="700">Courir</text>
+  <path d="M676,126 C706,132 712,172 738,182" stroke="#ec7a1c" stroke-width="3" fill="none" marker-end="url(#ao)"/>
+
+  <!-- Course -> Combat (Terminer) -->
+  <path d="M838,258 L838,348" stroke="#ec7a1c" stroke-width="3" fill="none" marker-end="url(#ao)"/>
+  <text x="848" y="308" fill="#ec7a1c" font-size="12" font-weight="700">Terminer</text>
+  <!-- Combat -> Résumé (résolution) -->
+  <path d="M738,410 L672,410" stroke="#ec7a1c" stroke-width="3" fill="none" marker-end="url(#ao)"/>
+  <text x="690" y="399" fill="#ec7a1c" font-size="12" font-weight="700" text-anchor="middle">résolution</text>
+  <!-- Résumé -> QG (boucle de jeu) -->
+  <path d="M520,352 C450,318 388,282 366,256" stroke="#ec7a1c" stroke-width="3" fill="none" marker-end="url(#ao)"/>
+  <text x="392" y="322" fill="#ec7a1c" font-size="12" font-weight="700">boucle de jeu</text>
+
+  <!-- Course <-> Pause -->
+  <path d="M936,186 L950,186" stroke="#f2c400" stroke-width="2.5" stroke-dasharray="5 4" fill="none" marker-end="url(#ay)"/>
+  <path d="M950,216 L936,216" stroke="#f2c400" stroke-width="2.5" stroke-dasharray="5 4" fill="none" marker-end="url(#ay)"/>
+  <text x="1008" y="150" fill="#f2c400" font-size="12" text-anchor="middle">Pause ⇄ Reprendre</text>
+
+  <!-- QG -> méta -->
+  <path d="M332,256 L340,552" stroke="#6b7ba0" stroke-width="2.5" fill="none" marker-end="url(#am)"/>
+  <path d="M416,256 C470,370 520,470 556,552" stroke="#6b7ba0" stroke-width="2.5" fill="none" marker-end="url(#am)"/>
+
+  <!-- ================= BOXES ================= -->
+  <g>
+    <rect x="40" y="88" width="164" height="80" rx="14" fill="#14273a" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="122" y="123" fill="#eaf0ff" font-size="15" font-weight="700" text-anchor="middle">Splash</text>
+    <text x="122" y="144" fill="#8393b0" font-size="12" text-anchor="middle">logo · chargement</text>
+  </g>
+  <g>
+    <rect x="40" y="238" width="164" height="80" rx="14" fill="#14273a" stroke="#f2c400" stroke-opacity="0.5" stroke-dasharray="6 5"/>
+    <text x="122" y="272" fill="#eaf0ff" font-size="15" font-weight="700" text-anchor="middle">Onboarding</text>
+    <text x="122" y="293" fill="#8393b0" font-size="12" text-anchor="middle">permission GPS</text>
+  </g>
+  <g>
+    <rect x="248" y="150" width="196" height="104" rx="16" fill="#1c2233" stroke="#ec7a1c" stroke-width="2"/>
+    <text x="346" y="186" fill="#ffab4d" font-size="17" font-weight="800" text-anchor="middle">QG · Accueil</text>
+    <text x="346" y="208" fill="#c9d3ea" font-size="12" text-anchor="middle">ta carte de territoire</text>
+    <text x="346" y="226" fill="#8393b0" font-size="12" text-anchor="middle">rang de saison · Courir</text>
+  </g>
+  <g>
+    <rect x="500" y="86" width="176" height="82" rx="14" fill="#14273a" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="588" y="118" fill="#eaf0ff" font-size="15" font-weight="700" text-anchor="middle">Préparation</text>
+    <text x="588" y="138" fill="#8393b0" font-size="12" text-anchor="middle">fix GPS · objectif</text>
+    <text x="588" y="155" fill="#f2c400" font-size="12" text-anchor="middle">décompte 3·2·1</text>
+  </g>
+  <g>
+    <rect x="740" y="150" width="196" height="104" rx="16" fill="url(#run)" stroke="#34ad69" stroke-width="2"/>
+    <text x="838" y="186" fill="#7be6a6" font-size="17" font-weight="800" text-anchor="middle">Course live</text>
+    <text x="838" y="208" fill="#c9d3ea" font-size="12" text-anchor="middle">carte + hexagones</text>
+    <text x="838" y="226" fill="#8393b0" font-size="12" text-anchor="middle">capture en courant</text>
+  </g>
+  <g>
+    <rect x="950" y="162" width="118" height="80" rx="12" fill="#14273a" stroke="#f2c400" stroke-opacity="0.5" stroke-dasharray="6 5"/>
+    <text x="1009" y="196" fill="#eaf0ff" font-size="14" font-weight="700" text-anchor="middle">Pause</text>
+    <text x="1009" y="215" fill="#8393b0" font-size="10.5" text-anchor="middle">Reprendre ·</text>
+    <text x="1009" y="229" fill="#8393b0" font-size="10.5" text-anchor="middle">Terminer</text>
+  </g>
+  <!-- NOUVEAU : Combat de territoire -->
+  <g>
+    <rect x="740" y="352" width="196" height="116" rx="16" fill="url(#vsf)" stroke="url(#vs)" stroke-width="2.5"/>
+    <text x="838" y="386" fill="#ffb347" font-size="16.5" font-weight="800" text-anchor="middle">⚔ Combat de territoire</text>
+    <text x="838" y="410" fill="#c9d3ea" font-size="12" text-anchor="middle">animation de fin de course</text>
+    <text x="838" y="428" fill="#ff8ec4" font-size="12" text-anchor="middle">tes zones VS les rivales</text>
+    <text x="838" y="446" fill="#8393b0" font-size="12" text-anchor="middle">hexagones qui basculent</text>
+  </g>
+  <g>
+    <rect x="476" y="352" width="196" height="116" rx="16" fill="#14273a" stroke="#34ad69" stroke-width="2"/>
+    <text x="574" y="386" fill="#7be6a6" font-size="16" font-weight="800" text-anchor="middle">Résumé course</text>
+    <text x="574" y="410" fill="#c9d3ea" font-size="12" text-anchor="middle">zones · km · allure · XP</text>
+    <text x="574" y="428" fill="#c9d3ea" font-size="12" text-anchor="middle">territoire net gagné</text>
+    <text x="574" y="446" fill="#8393b0" font-size="12" text-anchor="middle">export GPX · partage</text>
+  </g>
+  <g>
+    <rect x="248" y="556" width="186" height="72" rx="14" fill="#14273a" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="341" y="586" fill="#eaf0ff" font-size="15" font-weight="700" text-anchor="middle">Classement</text>
+    <text x="341" y="606" fill="#8393b0" font-size="12" text-anchor="middle">territoire · joueurs</text>
+  </g>
+  <g>
+    <rect x="460" y="556" width="200" height="72" rx="14" fill="#14273a" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="560" y="586" fill="#eaf0ff" font-size="15" font-weight="700" text-anchor="middle">Profil · Historique</text>
+    <text x="560" y="606" fill="#8393b0" font-size="12" text-anchor="middle">courses · stats · GPX</text>
+  </g>
+
+  <!-- ================= LÉGENDE ================= -->
+  <g transform="translate(720,548)">
+    <text x="0" y="0" fill="#8393b0" font-size="12" font-weight="700">LÉGENDE</text>
+    <line x1="0" y1="24" x2="34" y2="24" stroke="#ec7a1c" stroke-width="3" marker-end="url(#ao)"/>
+    <text x="44" y="28" fill="#c9d3ea" font-size="12">boucle de jeu principale</text>
+    <line x1="0" y1="50" x2="34" y2="50" stroke="#6b7ba0" stroke-width="2.5" marker-end="url(#am)"/>
+    <text x="44" y="54" fill="#c9d3ea" font-size="12">navigation secondaire</text>
+    <line x1="0" y1="76" x2="34" y2="76" stroke="#f2c400" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#ay)"/>
+    <text x="44" y="80" fill="#c9d3ea" font-size="12">condition / sous-état</text>
+    <rect x="0" y="98" width="16" height="16" rx="4" fill="#1c2233" stroke="#ec7a1c" stroke-width="2"/>
+    <text x="24" y="111" fill="#c9d3ea" font-size="12">hub (QG)</text>
+    <rect x="150" y="98" width="16" height="16" rx="4" fill="url(#vsf)" stroke="url(#vs)" stroke-width="2"/>
+    <text x="174" y="111" fill="#c9d3ea" font-size="12">combat (animation)</text>
+    <rect x="0" y="124" width="16" height="16" rx="4" fill="url(#run)" stroke="#34ad69" stroke-width="2"/>
+    <text x="24" y="137" fill="#c9d3ea" font-size="12">cœur / résultat</text>
+    <rect x="150" y="124" width="16" height="16" rx="4" fill="#14273a" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="174" y="137" fill="#c9d3ea" font-size="12">écran standard</text>
+  </g>
+</svg>

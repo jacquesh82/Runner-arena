@@ -70,6 +70,29 @@ Permissions déjà déclarées dans `capacitor.config.json` (localisation, portr
 Sur device, `LocationService` utilise le vrai GPS ; le simulateur ne sert qu'au
 desktop / à l'émulateur sans capteur.
 
+## Charte & assets
+
+Le logo (hexagone vert + runner orange + piste pointillée jaune) fixe la palette
+du jeu :
+
+| Élément | Couleur |
+| --- | --- |
+| Runner / joueur, accents | orange `#ff7a1a` |
+| Territoire conquis | vert `#2fbf4a` |
+| Onde de capture / piste | jaune `#f2c500` |
+| Adversaire | magenta `#ff2d95` |
+| Fond | navy `#0b1524` |
+
+- `public/logo-badge.png` — badge carré (écran d'accueil, source d'icône)
+- `public/logo-wordmark.png` — logo horizontal
+- `resources/icon.png` — source pour générer les icônes natives
+
+Générer les icônes/splash iOS + Android depuis le badge :
+
+```bash
+npx @capacitor/assets generate --iconBackgroundColor '#0b1524' --splashBackgroundColor '#0b1524'
+```
+
 ## Personnaliser
 
 - **Ville de départ** : `START` dans `src/main.js` (avant le 1er fix GPS).

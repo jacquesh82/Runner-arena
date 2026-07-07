@@ -23,7 +23,7 @@ import { AudioManager } from "./audio-service.js";
 import { BuildInfo } from "../build-info.js";
 
 /* Couleurs d'équipe (miroir du jeu : PLAYER cyan, RIVAL rose). */
-const CYAN = "#00e5ff";
+const CYAN = "#ec7a1c";
 const PINK = "#ff2d95";
 
 /* Répliques de Hexo (rotation + au tap). */
@@ -66,27 +66,27 @@ function hexoSvg() {
   <svg class="hexo-svg" viewBox="0 0 200 210" aria-label="Hexo">
     <defs>
       <radialGradient id="hexoBody" cx="42%" cy="32%" r="75%">
-        <stop offset="0%"  stop-color="#8ef0ff"/>
-        <stop offset="55%" stop-color="#3fd0ff"/>
-        <stop offset="100%" stop-color="#1c8fd6"/>
+        <stop offset="0%"  stop-color="#ffcf9e"/>
+        <stop offset="55%" stop-color="#ffab4d"/>
+        <stop offset="100%" stop-color="#c85f12"/>
       </radialGradient>
       <radialGradient id="hexoGlow" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#8ef6ff" stop-opacity="0.9"/>
-        <stop offset="100%" stop-color="#8ef6ff" stop-opacity="0"/>
+        <stop offset="0%" stop-color="#ffd9a8" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#ffd9a8" stop-opacity="0"/>
       </radialGradient>
     </defs>
     <ellipse class="hexo-shadow" cx="100" cy="196" rx="52" ry="11"/>
     <ellipse cx="100" cy="105" rx="98" ry="98" fill="url(#hexoGlow)" opacity="0.7"/>
     <g class="hexo-feet">
-      <ellipse cx="78" cy="176" rx="13" ry="9" fill="#1c8fd6"/>
-      <ellipse cx="122" cy="176" rx="13" ry="9" fill="#1c8fd6"/>
+      <ellipse cx="78" cy="176" rx="13" ry="9" fill="#c85f12"/>
+      <ellipse cx="122" cy="176" rx="13" ry="9" fill="#c85f12"/>
     </g>
     <path class="hexo-body" d="M100 20 L166 58 L166 134 L100 172 L34 134 L34 58 Z"
-          fill="url(#hexoBody)" stroke="#0fb6ee" stroke-width="3"
+          fill="url(#hexoBody)" stroke="#c85f12" stroke-width="3"
           stroke-linejoin="round"/>
     <path d="M100 30 L150 60 Q120 52 100 60 Q80 52 50 60 Z" fill="#ffffff" opacity="0.3"/>
-    <ellipse cx="30" cy="104" rx="9" ry="12" fill="#28a6df"/>
-    <ellipse cx="170" cy="104" rx="9" ry="12" fill="#28a6df"/>
+    <ellipse cx="30" cy="104" rx="9" ry="12" fill="#d17a2a"/>
+    <ellipse cx="170" cy="104" rx="9" ry="12" fill="#d17a2a"/>
     <g class="hexo-eyes">
       <ellipse class="eye" cx="80" cy="98" rx="14" ry="17" fill="#ffffff"/>
       <ellipse class="eye" cx="120" cy="98" rx="14" ry="17" fill="#ffffff"/>

@@ -16,7 +16,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { buildGrid, mPerDegLng } from "../hexgrid.js";
 
 const M_PER_DEG_LAT = 111320;
-const CYAN = [0.16, 0.91, 1.0];
+const CYAN = [0.925, 0.478, 0.110];
 const MAG = [1.0, 0.18, 0.53];
 const BOARD = [0.10, 0.13, 0.22];
 
@@ -32,7 +32,7 @@ const CFG = {
 
 const TTL_DAYS = 15;                    // durée de possession max avant remise en jeu
 const PLAYERS = {
-  me:    { id: "me",    name: "Toi", color: "#28e8ff" },
+  me:    { id: "me",    name: "Toi", color: "#ec7a1c" },
   rival: { id: "rival", name: "Nyx", color: "#ff2e86" },
 };
 const DAY = 86400000;
@@ -111,7 +111,7 @@ export class ReplayService {
     });
 
     this.map.on("error", (e) => console.warn("[replay] map:", e && (e.error?.message || e.error)));
-    if (!this.map.loaded()) await new Promise(res => this.map.once("load", res));
+    if (!this.map.loaded()) await new Promise((res) => { let d=false; const go=()=>{ if(!d){d=true;res();} }; this.map.once("load", go); setTimeout(go, 4000); });
     this.map.fitBounds(this.bounds, { padding: 70, pitch: 42, bearing: -22, animate: false });
     this._buildWorld();
     this._injectHud();
@@ -884,7 +884,7 @@ export class ReplayService {
       </div>
       <div class="rc-sec">Territoire — prises & pertes</div>
       <div class="rc-terr">
-        <div class="rc-row"><span class="k"><i style="background:#28e8ff"></i>Zones conquises</span><span class="v pos">+${s.mine}</span></div>
+        <div class="rc-row"><span class="k"><i style="background:#ec7a1c"></i>Zones conquises</span><span class="v pos">+${s.mine}</span></div>
         <div class="rc-row sub"><span class="k">↳ nouvelles zones</span><span class="v">${s.neuf}</span></div>
         <div class="rc-row sub"><span class="k">↳ arrachées à Nyx</span><span class="v pos">${s.vol}</span></div>
         <div class="rc-row"><span class="k">Zones perdues</span><span class="v ${s.loss ? "neg" : ""}">0</span></div>
@@ -952,7 +952,7 @@ export class ReplayService {
       const a = Math.random() * Math.PI - Math.PI / 2;
       s.style.setProperty("--dx", (Math.cos(a) * (45 + Math.random() * 55)).toFixed(0) + "px");
       s.style.setProperty("--dy", (-55 - Math.random() * 70).toFixed(0) + "px");
-      s.style.background = Math.random() < 0.45 ? "#28e8ff" : (Math.random() < 0.5 ? "#ff2e86" : "#ffcf5c");
+      s.style.background = Math.random() < 0.45 ? "#ec7a1c" : (Math.random() < 0.5 ? "#ff2e86" : "#ffcf5c");
       root.appendChild(s);
       setTimeout(() => s.remove(), 1800);
     }
@@ -1046,21 +1046,21 @@ export class ReplayService {
       .rp{position:absolute;z-index:6;pointer-events:none;font-family:"Helvetica Neue",Arial,sans-serif;color:#cdd8f5}
       .rp-eyebrow{font-size:10px;letter-spacing:.4em;text-transform:uppercase;color:#7c88b0;font-weight:700}
       .rp-title{margin:.35em 0 0;font-weight:800;line-height:.9;font-size:clamp(24px,7vw,44px);letter-spacing:-.02em;text-transform:uppercase;
-        background:linear-gradient(92deg,#28e8ff,#bfefff 55%,#ff2e86);-webkit-background-clip:text;background-clip:text;color:transparent}
+        background:linear-gradient(92deg,#ec7a1c,#bfefff 55%,#ff2e86);-webkit-background-clip:text;background-clip:text;color:transparent}
       #rp-top{top:calc(env(safe-area-inset-top,0) + 16px);left:18px}
       #rp-score{top:calc(env(safe-area-inset-top,0) + 16px);right:18px;display:flex;gap:16px;text-align:right}
       .rp-team{display:flex;flex-direction:column;align-items:flex-end}
       .rp-team .n{font-size:clamp(26px,7vw,44px);font-weight:800;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
       .rp-team .l{font-size:9px;letter-spacing:.24em;text-transform:uppercase;font-weight:700;color:#7c88b0}
-      .rp-team.p .n{color:#28e8ff;text-shadow:0 0 20px rgba(40,232,255,.45)}
+      .rp-team.p .n{color:#ec7a1c;text-shadow:0 0 20px rgba(40,232,255,.45)}
       .rp-team.r .n{color:#ff2e86;text-shadow:0 0 20px rgba(255,46,134,.45)}
       #rp-bottom{left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0) + 20px);width:min(520px,88vw);display:flex;flex-direction:column;gap:12px;pointer-events:auto}
       #rp-bar{height:3px;border-radius:3px;background:rgba(124,136,176,.25);position:relative;overflow:hidden}
-      #rp-fill{position:absolute;inset:0 100% 0 0;background:linear-gradient(90deg,#28e8ff,#ff2e86);box-shadow:0 0 12px rgba(40,232,255,.5)}
+      #rp-fill{position:absolute;inset:0 100% 0 0;background:linear-gradient(90deg,#ec7a1c,#ff2e86);box-shadow:0 0 12px rgba(40,232,255,.5)}
       #rp-replay{align-self:center;pointer-events:auto;cursor:pointer;border:1px solid rgba(124,136,176,.3);background:rgba(10,13,26,.55);backdrop-filter:blur(8px);color:#cdd8f5;font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:11px 22px;border-radius:100px;display:inline-flex;align-items:center;gap:8px}
-      #rp-replay:hover{border-color:#28e8ff;color:#fff;box-shadow:0 0 22px rgba(40,232,255,.22)}
+      #rp-replay:hover{border-color:#ec7a1c;color:#fff;box-shadow:0 0 22px rgba(40,232,255,.22)}
       #rp-status{margin-top:.8em;font-size:11px;letter-spacing:.22em;text-transform:uppercase;font-weight:700;display:flex;align-items:center;gap:.5em}
-      #rp-status .dot{width:6px;height:6px;border-radius:50%;background:#28e8ff;box-shadow:0 0 9px #28e8ff}
+      #rp-status .dot{width:6px;height:6px;border-radius:50%;background:#ec7a1c;box-shadow:0 0 9px #ec7a1c}
       body.rp-light #rp-statustxt{color:#26304a}
       body.rp-light .rp-eyebrow,body.rp-light .rp-team .l{color:#5a668a}
       body.rp-light .rp{text-shadow:0 1px 10px rgba(255,255,255,.6)}
@@ -1075,7 +1075,7 @@ export class ReplayService {
       body.rp-light #rp-modes button{color:#5a668a}
       #rp-modes button b{font-size:12px;font-weight:800;letter-spacing:.02em}
       #rp-modes button small{font-size:8px;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
-      #rp-modes button.on{background:linear-gradient(92deg,#28e8ff,#7ff0ff);color:#062028;box-shadow:0 2px 14px rgba(40,232,255,.35)}
+      #rp-modes button.on{background:linear-gradient(92deg,#ec7a1c,#ffc98f);color:#062028;box-shadow:0 2px 14px rgba(40,232,255,.35)}
       /* toast de découverte de lieu */
       #rp-toast{position:absolute;z-index:7;top:calc(env(safe-area-inset-top,0) + 132px);left:50%;transform:translate(-50%,-8px);
         background:rgba(12,16,28,.84);backdrop-filter:blur(10px);border:1px solid rgba(40,232,255,.45);border-radius:100px;
@@ -1083,7 +1083,7 @@ export class ReplayService {
         display:flex;align-items:center;gap:10px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:0 8px 26px rgba(0,0,0,.32)}
       #rp-toast.show{opacity:1;transform:translate(-50%,0)}
       #rp-toast .em{font-size:19px}
-      #rp-toast small{display:block;font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:#28e8ff;font-weight:700}
+      #rp-toast small{display:block;font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:#ec7a1c;font-weight:700}
       body.rp-light #rp-toast{background:rgba(255,255,255,.92);color:#1a2036;border-color:rgba(40,180,220,.5)}
       /* collection dans le bilan */
       #rp-recap .rc-badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px}
@@ -1182,9 +1182,9 @@ export class ReplayService {
       #rp-recap.show .panel{transform:none}
       #rp-recap .rc-eyebrow{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:#8b97bd;font-weight:700}
       #rp-recap h2{margin:.3em 0 0;font-size:26px;font-weight:800;letter-spacing:-.02em;text-transform:uppercase;
-        background:linear-gradient(92deg,#28e8ff,#ff2e86);-webkit-background-clip:text;background-clip:text;color:transparent}
+        background:linear-gradient(92deg,#ec7a1c,#ff2e86);-webkit-background-clip:text;background-clip:text;color:transparent}
       #rp-recap .rc-score{display:flex;align-items:baseline;gap:12px;margin:16px 0 4px}
-      #rp-recap .rc-score .v{font-size:54px;font-weight:800;line-height:.9;color:#28e8ff;font-variant-numeric:tabular-nums;text-shadow:0 0 26px rgba(40,232,255,.5)}
+      #rp-recap .rc-score .v{font-size:54px;font-weight:800;line-height:.9;color:#ec7a1c;font-variant-numeric:tabular-nums;text-shadow:0 0 26px rgba(40,232,255,.5)}
       #rp-recap .rc-score .l{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8b97bd;font-weight:700;line-height:1.3}
       #rp-recap .rc-sec{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#8b97bd;font-weight:700;margin:20px 0 9px}
       #rp-recap .rc-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(124,136,176,.14);border:1px solid rgba(124,136,176,.14);border-radius:12px;overflow:hidden}
@@ -1202,7 +1202,7 @@ export class ReplayService {
       #rp-recap .rc-note b{color:#e6ecfb}
       #rp-recap .rc-actions{display:flex;gap:10px;margin-top:18px}
       #rp-recap button{flex:1;cursor:pointer;border-radius:100px;padding:12px;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(124,136,176,.3);color:#cdd8f5;background:transparent}
-      #rp-recap .primary{background:linear-gradient(92deg,#28e8ff,#7ff0ff);color:#062028;border:0}
+      #rp-recap .primary{background:linear-gradient(92deg,#ec7a1c,#ffc98f);color:#062028;border:0}
     `;
     document.head.appendChild(style);
     document.body.classList.add("replay", this.mapKind === "light" ? "rp-light" : "rp-dark");
@@ -1332,6 +1332,6 @@ export class ReplayService {
     if (r!==this._rStat){this.hudEl.r.textContent=r;this._rStat=r;}
     this.hudEl.fill.style.right=(100-clamp01(t/CFG.T)*100).toFixed(1)+"%";
     const s = t<CFG.cap0 ? "Initialisation de l'arène" : steal ? "Territoire arraché au rival !" : t<CFG.cap1 ? "Conquête en cours" : "Territoire conquis";
-    if (this.hudEl.st.textContent!==s){ this.hudEl.st.textContent=s; this.hudEl.dot.style.background = steal?"#ff2e86":"#28e8ff"; }
+    if (this.hudEl.st.textContent!==s){ this.hudEl.st.textContent=s; this.hudEl.dot.style.background = steal?"#ff2e86":"#ec7a1c"; }
   }
 }
