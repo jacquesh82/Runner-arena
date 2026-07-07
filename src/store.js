@@ -41,6 +41,22 @@ export const store = {
     save(d);
   },
 
+  /* ---- Territoire conquis (positions géographiques persistantes) ---- */
+  getTerritory() { return load().territoryTiles || []; },
+  addTerritory(tiles) {
+    if (!tiles || !tiles.length) return;
+    const d = load();
+    const list = d.territoryTiles || [];
+    const seen = new Set(list.map((t) => t.k));
+    for (const t of tiles) {
+      const k = t.lat.toFixed(5) + "," + t.lng.toFixed(5);
+      if (!seen.has(k)) { seen.add(k); list.push({ lat: t.lat, lng: t.lng, k }); }
+    }
+    if (list.length > 5000) list.splice(0, list.length - 5000);
+    d.territoryTiles = list;
+    save(d);
+  },
+
   /* ---- Merveilles ---- */
   claimedMerveilles() { return new Set(load().merveilles || []); },
   claimMerveille(id) {

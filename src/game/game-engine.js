@@ -118,6 +118,13 @@ export class GameEngine extends EventTarget {
   }
 
   /* ---- Course -------------------------------------------------------- */
+  /* Centres (lat/lng) des tuiles possédées — pour persister le territoire. */
+  ownedCenters() {
+    const out = [];
+    for (const t of this.grid.tiles.values()) if (t.owner === "me") out.push({ lat: t.lat, lng: t.lng });
+    return out;
+  }
+
   beginRun() { this.capturing = true; this.follow = true; this.merveillesThisRun = []; }
   endRun() { this.capturing = false; return { zones: this.zones, merveilles: this.merveillesThisRun.slice() }; }
   recenter() { this.follow = true; if (this.player.has) this.map.easeTo({ center: [this.player.lng, this.player.lat], duration: 500 }); }

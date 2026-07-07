@@ -21,6 +21,7 @@ import { LeaderboardScreen } from "./screens/leaderboard.js";
 import { ProfileScreen } from "./screens/profile.js";
 import { CollectionScreen } from "./screens/collection.js";
 import { OptionsScreen } from "./screens/options.js";
+import { TerritoryScreen } from "./screens/territory.js";
 import { IntroScreen } from "./services/intro-service.js";
 import { AuthManager } from "./services/auth-service.js";
 import { createTabBar } from "./tabbar.js";
@@ -73,6 +74,7 @@ async function boot() {
   router.register("leaderboard", new LeaderboardScreen(ctx));
   router.register("profile", new ProfileScreen(ctx));
   router.register("collection", new CollectionScreen(ctx));
+  router.register("territory", new TerritoryScreen(ctx));
   router.register("options", new OptionsScreen(ctx));
 
   // Barre de navigation persistante (Accueil · Collection · Classement · Profil · Options)

@@ -3,11 +3,12 @@
 const TABS = [
   { id: "home", icon: "🏠", label: "Accueil" },
   { id: "collection", icon: "🎖", label: "Collection" },
+  { id: "territory", icon: "🗺️", label: "Territoire" },
   { id: "leaderboard", icon: "🏆", label: "Classement" },
-  { id: "profile", icon: "👤", label: "Profil" },
   { id: "options", icon: "⚙️", label: "Options" },
 ];
-const MENU = new Set(TABS.map((t) => t.id));
+// Profil n'a plus d'onglet mais reste un écran « menu » (barre visible dessus).
+const MENU = new Set([...TABS.map((t) => t.id), "profile"]);
 
 export function createTabBar(router) {
   const el = document.getElementById("tabbar");

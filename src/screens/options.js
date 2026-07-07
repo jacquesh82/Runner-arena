@@ -15,6 +15,7 @@ export class OptionsScreen {
           </div>
           <div class="opt-card">
             <div class="opt-row"><span>Compte</span><span class="opt-val" id="opt-acc">—</span></div>
+            <button class="btn-ghost" id="opt-profile">👤 Mon profil</button>
             <button class="btn-ghost" id="opt-logout">Se déconnecter</button>
           </div>
           <div class="opt-card">
@@ -25,6 +26,7 @@ export class OptionsScreen {
         </div>
       </div>`);
     root.querySelector("#opt-sound").addEventListener("click", () => this._toggleSound());
+    root.querySelector("#opt-profile").addEventListener("click", () => this.ctx.router.go("profile"));
     root.querySelector("#opt-logout").addEventListener("click", () => this._logout());
     root.querySelector("#opt-cine").addEventListener("click", () => { window.location.href = window.location.pathname + "?replay=1"; });
     this.el = root;

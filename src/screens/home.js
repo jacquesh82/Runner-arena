@@ -12,7 +12,7 @@ export class HomeScreen {
         </header>
 
         <section class="home-card">
-          <div class="home-rank">
+          <div class="home-rank" id="h-profile" role="button" title="Mon profil">
             <span class="rank-badge" id="h-level">1</span>
             <div>
               <div class="rank-title">Niveau <span id="h-level2">1</span></div>
@@ -28,6 +28,7 @@ export class HomeScreen {
         <button class="run-cta" id="h-run"><span>COURIR</span></button>
       </div>`);
     root.querySelector("#h-run").addEventListener("click", () => this.ctx.router.go("prepare"));
+    root.querySelector("#h-profile").addEventListener("click", () => this.ctx.router.go("profile"));
     this.el = root;
     return root;
   }

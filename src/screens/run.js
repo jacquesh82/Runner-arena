@@ -84,6 +84,8 @@ export class RunScreen {
     const track = (this.ctx.location.track || []).slice();
     const summary = this.ctx.location.endRun();
     const eng = this.ctx.engine.endRun();
+    // Persiste les tuiles conquises (pour la carte du territoire).
+    this.ctx.store.addTerritory(this.ctx.engine.ownedCenters());
     const km = summary.distance / 1000;
     const pace = summary.distance > 20 ? summary.duration / 60 / km : null;
 
