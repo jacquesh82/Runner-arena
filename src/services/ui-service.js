@@ -268,7 +268,9 @@ export class UiService {
 
       const team = tile.owner === "me" ? PLAYER : RIVAL;
       const col = team.color;
-      const pulse = 0.5 + 0.5 * Math.sin(this.t * 2.2 + tile.phase * 6.28);
+      // respiration douce et lente (amplitude réduite → champ de tuiles moins
+      // "clignotant", plus proche du rendu propre de l'intro)
+      const pulse = 0.5 + 0.5 * Math.sin(this.t * 1.5 + tile.phase * 6.28);
 
       // animation de capture (pop élastique)
       if (tile.capT > 0 && tile.capT < 1) tile.capT = Math.min(1, tile.capT + dt / 0.5);
@@ -277,15 +279,20 @@ export class UiService {
       const sc = 0.15 + 0.85 * Math.min(grow, 1.25);
       const spts = scalePoly(pts, c.x, c.y, sc);
 
-      // halo (glow additif)
-      this.gGlow.poly(scalePoly(pts, c.x, c.y, sc * 1.12))
-        .fill({ color: col, alpha: 0.12 + pulse * 0.06 });
+      // halo (glow additif) — double passe pour un bloom doux et net
+      this.gGlow.poly(scalePoly(pts, c.x, c.y, sc * 1.24))
+        .fill({ color: col, alpha: 0.05 + pulse * 0.03 });
+      this.gGlow.poly(scalePoly(pts, c.x, c.y, sc * 1.09))
+        .fill({ color: col, alpha: 0.1 + pulse * 0.04 });
       // remplissage
-      this.gFill.poly(spts).fill({ color: col, alpha: 0.28 + pulse * 0.12 });
-      // contour néon
-      this.gFill.poly(spts).stroke({ width: 1.8, color: col, alpha: 0.7 + pulse * 0.3 });
-      // éclat de capture
-      if (tile.flash > 0) this.gFx.poly(spts).fill({ color: 0xffffff, alpha: tile.flash * 0.6 });
+      this.gFill.poly(spts).fill({ color: col, alpha: 0.3 + pulse * 0.07 });
+      // contour néon net
+      this.gFill.poly(spts).stroke({ width: 1.6, color: col, alpha: 0.8 + pulse * 0.18 });
+      // éclat de capture (flash blanc + onde de contour)
+      if (tile.flash > 0) {
+        this.gFx.poly(spts).fill({ color: 0xffffff, alpha: tile.flash * 0.55 });
+        this.gFx.poly(spts).stroke({ width: 2.4, color: 0xffffff, alpha: tile.flash * 0.7 });
+      }
     }
 
     // --- ondes de capture ---
