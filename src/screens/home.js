@@ -26,17 +26,8 @@ export class HomeScreen {
         </section>
 
         <button class="run-cta" id="h-run"><span>COURIR</span></button>
-
-        <nav class="home-nav">
-          <button class="nav-btn" id="h-coll"><span class="nav-ic">🎖</span><span>Collection</span></button>
-          <button class="nav-btn" id="h-lead"><span class="nav-ic">🏆</span><span>Classement</span></button>
-          <button class="nav-btn" id="h-prof"><span class="nav-ic">👤</span><span>Profil</span></button>
-        </nav>
       </div>`);
     root.querySelector("#h-run").addEventListener("click", () => this.ctx.router.go("prepare"));
-    root.querySelector("#h-coll").addEventListener("click", () => this.ctx.router.go("collection"));
-    root.querySelector("#h-lead").addEventListener("click", () => this.ctx.router.go("leaderboard"));
-    root.querySelector("#h-prof").addEventListener("click", () => this.ctx.router.go("profile"));
     this.el = root;
     return root;
   }

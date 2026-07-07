@@ -8,7 +8,6 @@ export class CollectionScreen {
     const root = el(`
       <div class="screen--solid screen--list">
         <header class="list-top">
-          <button class="close-btn" id="co-back">←</button>
           <h1>🎖 Collection</h1>
         </header>
         <div class="co-tabs">
@@ -17,7 +16,6 @@ export class CollectionScreen {
         </div>
         <div class="list-body" id="co-body"></div>
       </div>`);
-    root.querySelector("#co-back").addEventListener("click", () => this.ctx.router.go("home"));
     root.querySelectorAll(".co-tab").forEach((t) => t.addEventListener("click", () => this._tab(t.dataset.tab)));
     this.el = root;
     return root;

@@ -6,7 +6,6 @@ export class ProfileScreen {
     const root = el(`
       <div class="screen--solid screen--list">
         <header class="list-top">
-          <button class="close-btn" id="pf-back">←</button>
           <h1>👤 Profil</h1>
         </header>
         <section class="profile-hero">
@@ -18,7 +17,6 @@ export class ProfileScreen {
         <h2 class="profile-sub">Historique</h2>
         <div class="list-body" id="pf-body"></div>
       </div>`);
-    root.querySelector("#pf-back").addEventListener("click", () => this.ctx.router.go("home"));
     this.el = root;
     return root;
   }

@@ -13,12 +13,10 @@ export class LeaderboardScreen {
     const root = el(`
       <div class="screen--solid screen--list">
         <header class="list-top">
-          <button class="close-btn" id="lb-back">←</button>
           <h1>🏆 Classement</h1>
         </header>
         <div class="list-body" id="lb-body"></div>
       </div>`);
-    root.querySelector("#lb-back").addEventListener("click", () => this.ctx.router.go("home"));
     this.el = root;
     return root;
   }

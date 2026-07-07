@@ -20,8 +20,10 @@ import { SummaryScreen } from "./screens/summary.js";
 import { LeaderboardScreen } from "./screens/leaderboard.js";
 import { ProfileScreen } from "./screens/profile.js";
 import { CollectionScreen } from "./screens/collection.js";
+import { OptionsScreen } from "./screens/options.js";
 import { IntroScreen } from "./services/intro-service.js";
 import { AuthManager } from "./services/auth-service.js";
+import { createTabBar } from "./tabbar.js";
 
 const START = [48.8566, 2.3522]; // Paris — position de repli avant le 1er fix GPS
 
@@ -71,9 +73,15 @@ async function boot() {
   router.register("leaderboard", new LeaderboardScreen(ctx));
   router.register("profile", new ProfileScreen(ctx));
   router.register("collection", new CollectionScreen(ctx));
+  router.register("options", new OptionsScreen(ctx));
+
+  // Barre de navigation persistante (Accueil · Collection · Classement · Profil · Options)
+  const tabbar = createTabBar(router);
+  router.onNavigate = (name) => tabbar.update(name);
 
   // Intro AAA + connexion (Google / Mindlog / invité). Sautée si déjà connecté.
   const auth = new AuthManager();
+  ctx.auth = auth;
   let profile = auth.restore();
   if (!profile) {
     const intro = new IntroScreen({ start: START });

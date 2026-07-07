@@ -23,6 +23,7 @@ export class Router {
     next.enter && next.enter(params || {});
     this.current = next;
     this.currentName = name;
+    this.onNavigate && this.onNavigate(name);
   }
 }
 
