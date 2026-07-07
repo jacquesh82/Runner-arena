@@ -1,0 +1,365 @@
+/* ======================================================================
+ * Page d'intro RUNNER ARENA — identité « cartographie gamifiée ».
+ * Fond de carte réel (MapLibre) assombri + grille hexa néon + sillage de
+ * conquête. Palette du jeu (cyan/rose sur navy). Overlay plein écran.
+ * ==================================================================== */
+
+.intro {
+  --cyan: #00e5ff;
+  --pink: #ff2d95;
+  --ink: #eaf0ff;
+  --muted: #8390b8;
+
+  position: fixed;
+  inset: 0;
+  z-index: 100; /* au-dessus du HUD (30) et du #boot (20) */
+  overflow: hidden;
+  background: #05060d;
+  font-family: "Baloo 2", "Fredoka", "Quicksand", ui-rounded, "Segoe UI",
+    system-ui, sans-serif;
+  color: var(--ink);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  padding-top: var(--safe-t);
+  padding-bottom: var(--safe-b);
+}
+.intro.ready { opacity: 1; }
+.intro.leaving {
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* ---------------- Décor / parallaxe ---------------- */
+.intro-scene { position: absolute; inset: -6%; }
+.ly { position: absolute; inset: 0; will-change: transform; }
+
+/* fond de carte réel (assombri pour faire ressortir le néon) */
+.intro-map-bg {
+  position: absolute;
+  inset: 0;
+  background: #0a1020;
+  filter: brightness(0.52) saturate(1.15) contrast(1.05);
+  pointer-events: none;
+}
+.intro-map-bg .maplibregl-canvas { outline: none; }
+.intro-map-tint {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 38%, rgba(0, 120, 160, 0.18), transparent 70%),
+    linear-gradient(180deg, rgba(5, 6, 13, 0.35), rgba(5, 6, 13, 0.15) 40%, rgba(5, 6, 13, 0.6));
+}
+
+.intro-map { width: 100%; height: 100%; }
+.intro-particles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.intro-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(5, 6, 13, 0.45) 0%,
+    transparent 22%,
+    transparent 56%,
+    rgba(5, 6, 13, 0.9) 100%
+  );
+}
+
+/* ---------------- Hexo + bulle ---------------- */
+.ly-hexo { display: flex; align-items: center; justify-content: center; }
+.hexo-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateY(-3vh);
+}
+.hexo {
+  position: relative;
+  z-index: 1;
+  width: min(50vw, 230px);
+  cursor: pointer;
+  animation: hexo-breathe 3.4s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+.hexo-svg { width: 100%; height: auto; display: block; overflow: visible; }
+.hexo-shadow { fill: rgba(0, 20, 40, 0.4); animation: hexo-shadow 3.4s ease-in-out infinite; }
+.hexo-eyes .eye { animation: hexo-blink 4.2s infinite; transform-origin: center; transform-box: fill-box; }
+@keyframes hexo-breathe { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-6px) scale(1.015); } }
+@keyframes hexo-shadow { 0%, 100% { transform: scaleX(1); opacity: 0.9; } 50% { transform: scaleX(0.88); opacity: 0.6; } }
+@keyframes hexo-blink { 0%, 92%, 100% { transform: scaleY(1); } 95%, 97% { transform: scaleY(0.1); } }
+.hexo.jump { animation: hexo-jump 0.55s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes hexo-jump {
+  0% { transform: translateY(0) scale(1); }
+  35% { transform: translateY(-42px) scale(1.06, 0.96); }
+  70% { transform: translateY(0) scale(0.96, 1.05); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* bulle de dialogue */
+.hexo-bubble {
+  position: absolute;
+  bottom: 100%;
+  margin-bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  max-width: 74vw;
+  width: max-content;
+  background: #fff;
+  color: #22314f;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  padding: 9px 14px;
+  border-radius: 16px;
+  box-shadow: 0 8px 22px -8px rgba(0, 0, 0, 0.6);
+  text-align: center;
+  white-space: normal;
+}
+.hexo-bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  border: 9px solid transparent;
+  border-top-color: #fff;
+  margin-top: -1px;
+}
+.hexo-bubble.pop { animation: bubble-pop 0.36s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes bubble-pop {
+  0% { transform: translateX(-50%) scale(0.6); opacity: 0; }
+  100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+/* ---------------- Logo / titre : RUNNER ARENA ---------------- */
+.intro-header {
+  position: absolute;
+  top: calc(var(--safe-t) + 6vh);
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+  padding: 0 12px;
+  perspective: 800px;
+}
+.intro-tagline {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: clamp(12px, 3.6vw, 15px);
+  font-weight: 600;
+}
+
+/* ============ Logo 3D AAA (extrusion + gloss + biseau) — réutilisable ============ */
+.logo3d {
+  display: inline-block;
+  font-family: "Baloo 2", "Fredoka", "Nunito", ui-rounded, system-ui, sans-serif;
+  font-size: clamp(24px, 8.6vw, 46px);
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  line-height: 1;
+  transform: rotateX(15deg);
+  transform-style: preserve-3d;
+  animation: logo-float 4.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) { .logo3d { animation: none; } }
+@keyframes logo-float {
+  0%, 100% { transform: rotateX(15deg) translateY(0); }
+  50% { transform: rotateX(15deg) translateY(-5px); }
+}
+
+/* faces vitrées (dégradé haut clair → base saturée) */
+.logo3d .mark,
+.logo3d .w-run,
+.logo3d .w-arena {
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+.logo3d .w-run {
+  background-image: linear-gradient(180deg, #ffffff 0%, #eaf3ff 42%, #bccef2 62%, #91a8d8 100%);
+  text-shadow:
+    0 1px 0 #9fb2d6, 0 2px 0 #8ba0c8, 0 3px 0 #778cb4,
+    0 4px 0 #63789f, 0 5px 0 #52678c, 0 9px 14px rgba(0, 0, 0, 0.55);
+}
+.logo3d .w-arena {
+  background-image: linear-gradient(180deg, #e8ffff 0%, #8ef2ff 44%, #00e5ff 66%, #00a7c9 100%);
+  text-shadow:
+    0 1px 0 #23c3e6, 0 2px 0 #16b0d6, 0 3px 0 #0b9dc4,
+    0 4px 0 #058ab0, 0 5px 0 #04789a,
+    0 9px 14px rgba(0, 100, 130, 0.5), 0 8px 26px rgba(0, 229, 255, 0.4);
+}
+.logo3d .mark {
+  background-image: linear-gradient(180deg, #eaffff, #00e5ff 70%, #0090b0);
+  font-size: 0.74em;
+  letter-spacing: -3px;
+  margin-right: 9px;
+  text-shadow: 0 2px 0 #0aa9cc, 0 4px 0 #077f9c, 0 6px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------------- Bouton son ---------------- */
+.intro-sound {
+  position: absolute;
+  top: calc(var(--safe-t) + 12px);
+  right: 14px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(120, 160, 255, 0.2);
+  background: rgba(10, 14, 26, 0.7);
+  box-shadow: 0 6px 14px -4px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: transform 0.12s;
+  z-index: 2;
+}
+.intro-sound:active { transform: scale(0.9); }
+
+/* ---------------- UI d'authentification ---------------- */
+.intro-ui {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--safe-b) + 26px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 0 26px;
+}
+.auth-btn {
+  width: 100%;
+  max-width: 360px;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: none;
+  border-radius: 16px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.8);
+  transition: transform 0.12s, box-shadow 0.2s, filter 0.2s;
+}
+.auth-btn:active { transform: translateY(1px) scale(0.99); }
+.auth-google { background: #fff; color: #3c4043; }
+
+/* Mindlog.ID — identité « caméléon » : dégradé arc-en-ciel animé en continu. */
+.auth-mindlog {
+  color: #fff;
+  background: linear-gradient(
+    90deg,
+    #ff3b3b, #ff8a00, #ffe600, #33e06b,
+    #00cfff, #4d7bff, #a45cff, #ff4dc6, #ff3b3b
+  );
+  background-size: 400% 100%;
+  animation: chameleon 6s linear infinite;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 10px 26px -10px rgba(120, 60, 220, 0.6);
+}
+@keyframes chameleon { to { background-position: 400% 50%; } }
+.ml-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.28);
+  font-size: 11px;
+  font-weight: 900;
+}
+.auth-local {
+  background: transparent;
+  color: var(--ink);
+  box-shadow: none;
+  min-height: 40px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  opacity: 0.85;
+}
+
+/* spinner de chargement */
+.auth-btn.loading { color: transparent; }
+.auth-btn.loading::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(180, 180, 220, 0.35);
+  border-top-color: #b4b4dc;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.auth-mindlog.loading::after { border-color: rgba(255, 255, 255, 0.4); border-top-color: #fff; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.intro.busy .intro-ui { pointer-events: none; }
+.intro-legal {
+  margin-top: 2px;
+  font-size: 11px;
+  color: rgba(180, 190, 220, 0.6);
+  text-align: center;
+  max-width: 320px;
+}
+
+/* ---------------- HUD build + attribution ---------------- */
+.intro-build {
+  position: absolute;
+  left: 12px;
+  bottom: calc(var(--safe-b) + 6px);
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  color: rgba(131, 144, 184, 0.7);
+  font-family: ui-monospace, "SFMono-Regular", monospace;
+  pointer-events: none;
+}
+.intro-attrib {
+  position: absolute;
+  right: 10px;
+  bottom: calc(var(--safe-b) + 6px);
+  font-size: 9px;
+  color: rgba(131, 144, 184, 0.55);
+  pointer-events: none;
+}
+
+/* ---------------- Toast ---------------- */
+.intro-toast {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--safe-b) + 210px);
+  transform: translateX(-50%) translateY(8px);
+  background: rgba(10, 14, 26, 0.94);
+  border: 1px solid rgba(120, 160, 255, 0.2);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 22px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+}
+.intro-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-height: 640px) {
+  .hexo { width: min(40vw, 180px); margin-top: -2vh; }
+}

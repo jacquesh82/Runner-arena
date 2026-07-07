@@ -30,6 +30,25 @@ async function boot() {
     return;
   }
 
+  // Mode moteur du jeu (blitz / endurance / handicap). Par défaut endurance,
+  // surchargé par ?mode=… puis par le choix du hub post-login.
+  let gameMode = params.get("mode") || "endurance";
+
+  // Intro (title screen) → Hub de gamification (monde + mode) → jeu.
+  // ?nointro=1 saute intro + hub (dev / démos rapides).
+  if (!params.has("nointro")) {
+    const { IntroScreen } = await import("./services/intro-service.js");
+    const intro = new IntroScreen();
+    const session = await intro.show(); // résolu après auth (Google/Mindlog/local)
+
+    const { GameHub } = await import("./services/menu-service.js");
+    const hub = new GameHub(session);
+    const choice = await hub.show(); // { worldId, modeId, mode }
+    gameMode = choice.mode || gameMode;
+
+    window.__arena = { ...(window.__arena || {}), session, choice };
+  }
+
   // Sur desktop web sans GPS, on force le simulateur pour une démo jouable.
   // ?sim=1 force aussi la simulation (démo / captures).
   const isNative = Capacitor.isNativePlatform();
@@ -37,7 +56,7 @@ async function boot() {
   const simulate = forceSim || (!isNative && !("geolocation" in navigator));
 
   const location = new LocationService({ simulate, start: START });
-  const ui = new UiService(location, { start: START, mode: params.get("mode") || "endurance" });
+  const ui = new UiService(location, { start: START, mode: gameMode });
   await ui.init();
 
   // Verrouillage portrait sur mobile natif.
@@ -49,7 +68,7 @@ async function boot() {
   }
 
   // exposé pour debug console
-  window.__arena = { location, ui };
+  window.__arena = { ...(window.__arena || {}), location, ui };
 }
 
 boot().catch((e) => console.error("Boot error:", e));
