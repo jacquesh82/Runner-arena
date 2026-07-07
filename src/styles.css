@@ -1,15 +1,18 @@
 :root {
-  /* Charte Runner Arena (d'après le logo) */
-  --bg: #0b1524;         /* fond navy */
+  /* Couleurs échantillonnées dans le logo Runner Arena */
+  --bg: #0c1a2b;         /* navy du fond du logo (#112232 assombri) */
+  --navy-soft: #112232;  /* navy exact du logo (panneaux) */
   --text: #eaf0ff;
-  --muted: #8393b0;
-  --brand: #ff7a1a;      /* orange runner (accent principal) */
-  --green: #2fbf4a;      /* vert territoire */
-  --yellow: #f2c500;     /* jaune piste pointillée */
+  --muted: #7f90ad;
+  --brand: #ec7a1c;      /* orange runner (accent principal) */
+  --brand-light: #ffab4d;/* orange éclairé (dégradés/reflets) */
+  --green: #237749;      /* vert forêt de l'hexagone */
+  --green-light: #34ad69;/* vert éclairé (contours/glow) */
+  --yellow: #f2c400;     /* jaune de la piste pointillée */
   --pink: #ff2d95;       /* adversaire */
-  --cyan: var(--brand);  /* alias : les anciennes règles pointent l'orange */
-  --panel: rgba(12, 20, 36, 0.74);
-  --border: rgba(120, 160, 255, 0.18);
+  --cyan: var(--brand);  /* alias : anciennes règles -> orange */
+  --panel: rgba(17, 34, 50, 0.74);
+  --border: rgba(120, 160, 255, 0.16);
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
 }
@@ -42,7 +45,7 @@ html, body {
 /* flash coloré à la capture */
 #flash {
   position: absolute; inset: 0; z-index: 6; pointer-events: none; opacity: 0;
-  background: radial-gradient(circle at 50% 60%, rgba(255, 122, 26, 0.30), transparent 60%);
+  background: radial-gradient(circle at 50% 60%, rgba(236, 122, 28, 0.30), transparent 60%);
 }
 #flash.on { animation: flash 0.4s ease-out; }
 @keyframes flash { 0% { opacity: 0.9; } 100% { opacity: 0; } }
@@ -73,7 +76,7 @@ html, body {
   font-variant-numeric: tabular-nums; line-height: 1.05;
 }
 .stat-lbl { display: block; font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
-.stat:first-child .stat-val { color: var(--brand); text-shadow: 0 0 12px rgba(255, 122, 26, 0.5); }
+.stat:first-child .stat-val { color: var(--brand); text-shadow: 0 0 12px rgba(236, 122, 28, 0.5); }
 
 /* ---------- Bannière ---------- */
 .banner {
@@ -109,9 +112,9 @@ html, body {
   position: relative;
   width: 88px; height: 88px; border-radius: 50%;
   border: none; cursor: pointer;
-  background: linear-gradient(135deg, #ff7a1a, #ffb347);
+  background: linear-gradient(135deg, #ec7a1c, #ffab4d);
   color: #1a0c00; font-weight: 900; letter-spacing: 0.5px; font-size: 14px;
-  box-shadow: 0 8px 30px -6px rgba(255, 122, 26, 0.7);
+  box-shadow: 0 8px 30px -6px rgba(236, 122, 28, 0.7);
   transition: transform 0.12s, box-shadow 0.25s, background 0.25s;
 }
 .run-btn:active { transform: scale(0.95); }
@@ -122,7 +125,7 @@ html, body {
 }
 .run-ring {
   position: absolute; inset: -6px; border-radius: 50%;
-  border: 2px solid rgba(255, 122, 26, 0.5);
+  border: 2px solid rgba(236, 122, 28, 0.5);
 }
 .run-btn.running .run-ring { border-color: rgba(255, 45, 149, 0.6); animation: pulse 1.4s infinite; }
 @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.35); opacity: 0; } }
@@ -140,7 +143,7 @@ html, body {
 .boot-badge {
   width: min(58vw, 260px); height: auto;
   border-radius: 28px;
-  box-shadow: 0 16px 50px -8px rgba(255, 122, 26, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  box-shadow: 0 16px 50px -8px rgba(236, 122, 28, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   animation: badgeIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 @keyframes badgeIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }

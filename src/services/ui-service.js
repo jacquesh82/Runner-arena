@@ -22,11 +22,11 @@ const CONFIG = {
   captureRadius: 55, // m : distance sous laquelle une zone est prise
 };
 
-/* Charte Runner Arena (d'après le logo) */
-const PLAYER = { color: 0xff7a1a, rgb: [255, 122, 26] }; // le runner = orange
-const OWN = { color: 0x2fbf4a, rgb: [47, 191, 74] };     // ton territoire = vert
-const RIVAL = { color: 0xff2d95, rgb: [255, 45, 149] };  // adversaire = magenta
-const RING = 0xf2c500;                                    // onde = jaune piste
+/* Couleurs échantillonnées dans le logo Runner Arena */
+const PLAYER = { color: 0xec7a1c, rgb: [236, 122, 28] };          // runner = orange
+const OWN = { color: 0x34ad69, fill: 0x237749, rgb: [52, 173, 105] }; // territoire = vert forêt
+const RIVAL = { color: 0xff5bb0, fill: 0xff2d95, rgb: [255, 45, 149] }; // adversaire = magenta
+const RING = 0xf2c400;                                            // onde = jaune piste
 
 /* Fond de carte lisible (rues + labels) — remplaçable par du satellite */
 function mapStyle() {
@@ -238,7 +238,8 @@ export class UiService {
       }
 
       const team = tile.owner === "me" ? OWN : RIVAL;
-      const col = team.color;
+      const lineCol = team.color;        // contour/halo : teinte éclairée
+      const fillCol = team.fill || team.color; // remplissage : teinte de base
       const pulse = 0.5 + 0.5 * Math.sin(this.t * 2.2 + tile.phase * 6.28);
 
       // animation de capture (pop élastique)
@@ -250,11 +251,11 @@ export class UiService {
 
       // halo (glow additif)
       this.gGlow.poly(scalePoly(pts, c.x, c.y, sc * 1.12))
-        .fill({ color: col, alpha: 0.12 + pulse * 0.06 });
+        .fill({ color: lineCol, alpha: 0.12 + pulse * 0.06 });
       // remplissage
-      this.gFill.poly(spts).fill({ color: col, alpha: 0.28 + pulse * 0.12 });
+      this.gFill.poly(spts).fill({ color: fillCol, alpha: 0.32 + pulse * 0.12 });
       // contour néon
-      this.gFill.poly(spts).stroke({ width: 1.8, color: col, alpha: 0.7 + pulse * 0.3 });
+      this.gFill.poly(spts).stroke({ width: 1.8, color: lineCol, alpha: 0.7 + pulse * 0.3 });
       // éclat de capture
       if (tile.flash > 0) this.gFx.poly(spts).fill({ color: 0xffffff, alpha: tile.flash * 0.6 });
     }
