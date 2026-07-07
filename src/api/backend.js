@@ -20,9 +20,16 @@ import { store } from "../store.js";
 import { BADGES, BADGE_BY_ID, evaluateBadges } from "../data/badges.js";
 import { MERVEILLES } from "../data/merveilles.js";
 
-/* -------- Backend distant (production) : squelette fetch -------- */
+/* -------- Backend distant (serveur web `server/`) --------
+ * Câblé sur le vrai contrat : POST /runs (captures autoritatives côté serveur),
+ * GET /leaderboard. Les badges/merveilles/monétisation ne sont pas encore
+ * exposés par l'API → délégués au mock local (source de vérité à venir côté
+ * serveur, tables `badges`/`partners` déjà prévues au schéma). */
 class RemoteBackend {
-  constructor(base) { this.base = base.replace(/\/$/, ""); }
+  constructor(base) {
+    this.base = base.replace(/\/$/, "");
+    this._local = new MockBackend(); // pour badges/merveilles en attendant l'API
+  }
   async _req(path, opts) {
     const res = await fetch(this.base + path, {
       headers: { "Content-Type": "application/json", ...(this.token ? { Authorization: "Bearer " + this.token } : {}) },
@@ -32,13 +39,35 @@ class RemoteBackend {
     return res.json();
   }
   setToken(t) { this.token = t; }
-  submitRun(run) { return this._req("/runs", { method: "POST", body: JSON.stringify(run) }); }
-  getBadges() { return this._req("/badges"); }
-  getMerveilles(bbox) { return this._req("/merveilles?bbox=" + bbox.join(",")); }
-  claimMerveille(id) { return this._req(`/merveilles/${id}/claim`, { method: "POST" }); }
-  getTile(id) { return this._req(`/tiles/${id}`); }
-  purchaseTile(id, payload) { return this._req(`/tiles/${id}/purchase`, { method: "POST", body: JSON.stringify(payload) }); }
-  getLeaderboard() { return this._req("/leaderboard"); }
+
+  /* Soumet la trace brute ; le serveur applique les captures (anti-triche). */
+  async submitRun(run) {
+    const body = {
+      mode: run.mode || "endurance",
+      origin: run.origin || [48.8566, 2.3522],
+      player: run.player || { id: "local" },
+      track: (run.track || []).map((p) => ({ lat: p.lat, lng: p.lng, ele: p.ele ?? null, ts: p.ts ?? null })),
+    };
+    const r = await this._req("/runs", { method: "POST", body: JSON.stringify(body) });
+    // Badges composés localement (en attendant leur exposition serveur).
+    const localBadges = await this._local.submitRun(run).catch(() => ({ badgesEarned: [] }));
+    return {
+      xpGained: r.score ?? localBadges.xpGained ?? 0,
+      badgesEarned: localBadges.badgesEarned || [],
+      territory: (r.gained ?? 0),
+      server: r,
+    };
+  }
+
+  getLeaderboard(mode = "endurance") { return this._req(`/leaderboard?mode=${encodeURIComponent(mode)}`); }
+  getTiles(bbox, mode = "endurance") { return this._req(`/tiles?bbox=${bbox.join(",")}&mode=${mode}`); }
+
+  // Délégués au mock local (pas d'endpoint serveur pour l'instant)
+  getBadges() { return this._local.getBadges(); }
+  getMerveilles() { return this._local.getMerveilles(); }
+  claimMerveille(id) { return this._local.claimMerveille(id); }
+  getTile(id) { return this._local.getTile(id); }
+  purchaseTile(id, p) { return this._local.purchaseTile(id, p); }
 }
 
 /* -------- Mock local (démo hors-ligne) : mêmes signatures -------- */

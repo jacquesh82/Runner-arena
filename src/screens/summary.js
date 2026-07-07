@@ -56,10 +56,15 @@ export class SummaryScreen {
     q("#s-pace").textContent = data.pace && isFinite(data.pace) ? data.pace.toFixed(1) : "--";
     q("#s-badges").innerHTML = "";
 
-    // Soumission au backend : XP, badges, territoire (source de vérité)
+    // Soumission au backend : XP, badges, territoire (source de vérité).
+    // On joint la trace brute + le profil : le serveur distant recalcule les
+    // captures (anti-triche) ; le mock local utilise les agrégats.
     const res = await this.ctx.backend.submitRun({
       zones: data.zones || 0, km, duration: data.duration || 0, pace: data.pace || null,
       won: data.won || 0, lost: data.lost || 0, net: data.net || 0, merveilles: data.merveilles || [],
+      mode: "endurance",
+      track: this.ctx.location.track || [],
+      player: { id: this.ctx.profile?.id || "local" },
     });
     q("#s-xp").textContent = res.xpGained;
     q("#s-total").textContent = res.territory;
