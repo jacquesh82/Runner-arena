@@ -1,29 +1,51 @@
 /* ======================================================================
  * Runner Arena — point d'entrée.
- * Instancie les 2 services et les câble ensemble.
- *   LocationService (GPS/GPX)  ──position──▶  UiService (carte + jeu)
+ *   LocationService (GPS/GPX) ──▶ GameEngine (carte + jeu) ──▶ Router (écrans)
  * ====================================================================== */
 
 import "./styles.css";
-import { LocationService } from "./services/location-service.js";
-import { UiService } from "./services/ui-service.js";
 import { Capacitor } from "@capacitor/core";
+import { LocationService } from "./services/location-service.js";
+import { GameEngine } from "./game/game-engine.js";
+import { store } from "./store.js";
+import { Router } from "./router.js";
+import { SplashScreen } from "./screens/splash.js";
+import { OnboardingScreen } from "./screens/onboarding.js";
+import { HomeScreen } from "./screens/home.js";
+import { PrepareScreen } from "./screens/prepare.js";
+import { RunScreen } from "./screens/run.js";
+import { CombatScreen } from "./screens/combat.js";
+import { SummaryScreen } from "./screens/summary.js";
+import { LeaderboardScreen } from "./screens/leaderboard.js";
+import { ProfileScreen } from "./screens/profile.js";
 
-// Position de départ par défaut (avant le 1er point GPS). Change pour ta ville.
-const START = [48.8566, 2.3522]; // Paris
+const START = [48.8566, 2.3522]; // Paris — position de repli avant le 1er fix GPS
 
 async function boot() {
-  // Sur desktop web sans GPS, on force le simulateur pour une démo jouable.
-  // ?sim=1 force aussi la simulation (démo / captures).
   const isNative = Capacitor.isNativePlatform();
   const forceSim = new URLSearchParams(window.location.search).has("sim");
   const simulate = forceSim || (!isNative && !("geolocation" in navigator));
 
   const location = new LocationService({ simulate, start: START });
-  const ui = new UiService(location, { start: START });
-  await ui.init();
+  const engine = new GameEngine(location, { start: START });
+  await engine.init();
 
-  // Verrouillage portrait sur mobile natif.
+  const ctx = { location, engine, store, START };
+  const router = new Router(document.getElementById("screens"), ctx);
+  ctx.router = router;
+
+  router.register("splash", new SplashScreen(ctx));
+  router.register("onboarding", new OnboardingScreen(ctx));
+  router.register("home", new HomeScreen(ctx));
+  router.register("prepare", new PrepareScreen(ctx));
+  router.register("run", new RunScreen(ctx));
+  router.register("combat", new CombatScreen(ctx));
+  router.register("summary", new SummaryScreen(ctx));
+  router.register("leaderboard", new LeaderboardScreen(ctx));
+  router.register("profile", new ProfileScreen(ctx));
+
+  router.go("splash");
+
   if (isNative) {
     try {
       const { ScreenOrientation } = await import("@capacitor/screen-orientation");
@@ -31,8 +53,7 @@ async function boot() {
     } catch (_) {}
   }
 
-  // exposé pour debug console
-  window.__arena = { location, ui };
+  window.__arena = { location, engine, router, store };
 }
 
 boot().catch((e) => console.error("Boot error:", e));
