@@ -22,8 +22,11 @@ const CONFIG = {
   captureRadius: 55, // m : distance sous laquelle une zone est prise
 };
 
-const PLAYER = { color: 0x00e5ff, rgb: [0, 229, 255] };
-const RIVAL = { color: 0xff2d95, rgb: [255, 45, 149] };
+/* Charte Runner Arena (d'après le logo) */
+const PLAYER = { color: 0xff7a1a, rgb: [255, 122, 26] }; // le runner = orange
+const OWN = { color: 0x2fbf4a, rgb: [47, 191, 74] };     // ton territoire = vert
+const RIVAL = { color: 0xff2d95, rgb: [255, 45, 149] };  // adversaire = magenta
+const RING = 0xf2c500;                                    // onde = jaune piste
 
 /* Fond de carte lisible (rues + labels) — remplaçable par du satellite */
 function mapStyle() {
@@ -42,7 +45,7 @@ function mapStyle() {
       },
     },
     layers: [
-      { id: "bg", type: "background", paint: { "background-color": "#0a1020" } },
+      { id: "bg", type: "background", paint: { "background-color": "#0b1524" } },
       { id: "base", type: "raster", source: "base", paint: { "raster-brightness-max": 0.85, "raster-saturation": -0.1 } },
     ],
   };
@@ -234,7 +237,7 @@ export class UiService {
         continue;
       }
 
-      const team = tile.owner === "me" ? PLAYER : RIVAL;
+      const team = tile.owner === "me" ? OWN : RIVAL;
       const col = team.color;
       const pulse = 0.5 + 0.5 * Math.sin(this.t * 2.2 + tile.phase * 6.28);
 
@@ -264,7 +267,7 @@ export class UiService {
       if (k >= 1) { this.rings.splice(i, 1); continue; }
       const p = this._project(r.lat, r.lng);
       this.gFx.circle(p.x, p.y, CONFIG.hexSize * ppm * (0.4 + k * 1.7))
-        .stroke({ width: 3 * (1 - k) + 0.5, color: PLAYER.color, alpha: (1 - k) * 0.8 });
+        .stroke({ width: 3 * (1 - k) + 0.5, color: RING, alpha: (1 - k) * 0.8 });
     }
 
     // --- particules ---
