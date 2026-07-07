@@ -20,6 +20,8 @@ import { SummaryScreen } from "./screens/summary.js";
 import { LeaderboardScreen } from "./screens/leaderboard.js";
 import { ProfileScreen } from "./screens/profile.js";
 import { CollectionScreen } from "./screens/collection.js";
+import { IntroScreen } from "./services/intro-service.js";
+import { AuthManager } from "./services/auth-service.js";
 
 const START = [48.8566, 2.3522]; // Paris — position de repli avant le 1er fix GPS
 
@@ -49,7 +51,17 @@ async function boot() {
   router.register("profile", new ProfileScreen(ctx));
   router.register("collection", new CollectionScreen(ctx));
 
-  router.go("splash");
+  // Intro AAA + connexion (Google / Mindlog / invité). Sautée si déjà connecté.
+  const auth = new AuthManager();
+  let profile = auth.restore();
+  if (!profile) {
+    const intro = new IntroScreen({ start: START });
+    const res = await intro.show();
+    profile = res.profile;
+  }
+  ctx.profile = profile;
+
+  router.go("home");
 
   if (isNative) {
     try {
@@ -58,7 +70,7 @@ async function boot() {
     } catch (_) {}
   }
 
-  window.__arena = { location, engine, router, store };
+  window.__arena = { location, engine, router, store, profile };
 }
 
 boot().catch((e) => console.error("Boot error:", e));
