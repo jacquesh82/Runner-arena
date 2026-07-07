@@ -26,6 +26,7 @@ export class SummaryScreen {
 
         <div class="summary-badges" id="s-badges"></div>
 
+        <button class="btn-cine" id="s-cine">🎬 Revivre en cinématique</button>
         <div class="summary-actions">
           <button class="btn-ghost" id="s-gpx">⬇ GPX</button>
           <button class="btn-ghost" id="s-share">↗ Partager</button>
@@ -35,6 +36,7 @@ export class SummaryScreen {
     root.querySelector("#s-gpx").addEventListener("click", () => this._gpx());
     root.querySelector("#s-share").addEventListener("click", () => this._share());
     root.querySelector("#s-home").addEventListener("click", () => this._home());
+    root.querySelector("#s-cine").addEventListener("click", () => this._cine());
     this.el = root;
     return root;
   }
@@ -89,6 +91,11 @@ export class SummaryScreen {
   _home() {
     this.ctx.engine.setCenter(this.ctx.START); // réinitialise le plateau pour la prochaine course
     this.ctx.router.go("home");
+  }
+  _cine() {
+    // Rejoue la vraie course dans la cinématique « Prise de territoire ».
+    try { sessionStorage.setItem("arena.lastTrack", JSON.stringify(this.ctx.location.track || [])); } catch (_) {}
+    window.location.href = window.location.pathname + "?replay=1";
   }
   _toast(msg) {
     const t = el(`<div class="mini-toast">${msg}</div>`);

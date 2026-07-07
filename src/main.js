@@ -26,8 +26,29 @@ import { AuthManager } from "./services/auth-service.js";
 const START = [48.8566, 2.3522]; // Paris — position de repli avant le 1er fix GPS
 
 async function boot() {
+  const params = new URLSearchParams(window.location.search);
+
+  // ── Cinématique de fin « Prise de territoire » (combat + boss Nyx) ──
+  // ?replay=1 rejoue la DERNIÈRE course réelle (sinon un tracé de démo).
+  if (params.has("replay")) {
+    document.getElementById("screens").style.display = "none";
+    const { ReplayService, parseGpx } = await import("./services/replay-service.js");
+    let track = null;
+    try { const s = sessionStorage.getItem("arena.lastTrack"); if (s) track = JSON.parse(s); } catch (_) {}
+    if (!track || track.length < 2) track = parseGpx(await (await fetch("demo.gpx")).text());
+    const replay = new ReplayService(track, { container: "map", map: params.get("map") || "voyager" });
+    await replay.init();
+    const back = document.createElement("button");
+    back.textContent = "← Accueil";
+    back.style.cssText = "position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);left:12px;z-index:200;padding:10px 16px;border-radius:30px;border:1px solid rgba(120,160,255,.3);background:rgba(12,20,36,.8);color:#eaf0ff;font-weight:800;backdrop-filter:blur(8px)";
+    back.onclick = () => { window.location.href = window.location.pathname; };
+    document.body.appendChild(back);
+    window.__arena = { replay };
+    return;
+  }
+
   const isNative = Capacitor.isNativePlatform();
-  const forceSim = new URLSearchParams(window.location.search).has("sim");
+  const forceSim = params.has("sim");
   const simulate = forceSim || (!isNative && !("geolocation" in navigator));
 
   const location = new LocationService({ simulate, start: START });

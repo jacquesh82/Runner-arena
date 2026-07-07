@@ -211,6 +211,13 @@ html, body {
   opacity: 0; transition: opacity .3s, transform .3s; backdrop-filter: blur(10px); }
 .mini-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+.btn-cine {
+  width: 100%; padding: 13px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 14px;
+  color: #eafcff; border: 1px solid rgba(40, 232, 255, 0.4);
+  background: linear-gradient(92deg, rgba(40,232,255,0.16), rgba(255,46,134,0.14));
+  transition: transform 0.12s; }
+.btn-cine:active { transform: scale(0.97); }
+
 /* ---------- Listes (Classement / Profil) ---------- */
 .screen--list { padding-top: calc(var(--safe-t) + 16px); }
 .list-top { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
