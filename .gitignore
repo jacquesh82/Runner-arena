@@ -6,3 +6,5 @@ ios/
 .DS_Store
 .vite/
 .dual-graph/
+.projects/
+.env
