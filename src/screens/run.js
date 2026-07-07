@@ -79,17 +79,32 @@ export class RunScreen {
   _pause() { this.ctx.location.pauseRun(); this.el.querySelector("#r-pauseov").classList.add("show"); }
   _resume() { this.ctx.location.resumeRun(); this.el.querySelector("#r-pauseov").classList.remove("show"); }
 
-  _finish() {
+  async _finish() {
     const zones = this.ctx.engine.zones;
+    const track = (this.ctx.location.track || []).slice();
     const summary = this.ctx.location.endRun();
     const eng = this.ctx.engine.endRun();
-    const pace = summary.distance > 20 ? summary.duration / 60 / (summary.distance / 1000) : null;
-    this.ctx.router.go("combat", {
-      zones,
-      merveilles: eng.merveilles,
-      distance: summary.distance,
-      duration: summary.duration,
-      pace,
-    });
+    const km = summary.distance / 1000;
+    const pace = summary.distance > 20 ? summary.duration / 60 / km : null;
+
+    // Course trop courte pour une cinématique → repli sur le combat rapide in-app.
+    if (track.length < 2) {
+      this.ctx.router.go("combat", { zones, merveilles: eng.merveilles, distance: summary.distance, duration: summary.duration, pace });
+      return;
+    }
+
+    // Persiste la progression (XP, badges, territoire) AVANT la cinématique.
+    try {
+      await this.ctx.backend.submitRun({
+        zones, km, duration: summary.duration, pace, won: 0, lost: 0, net: zones,
+        merveilles: eng.merveilles, mode: "endurance", track,
+        player: { id: this.ctx.profile?.id || "local" },
+      });
+    } catch (_) {}
+
+    // Fin automatique = cinématique « Prise de territoire » sur la vraie course
+    // (inclut le combat contre Nyx + le bilan détaillé).
+    try { sessionStorage.setItem("arena.lastTrack", JSON.stringify(track)); } catch (_) {}
+    window.location.href = window.location.pathname + "?replay=1";
   }
 }

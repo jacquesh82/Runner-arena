@@ -16,6 +16,9 @@ on:
       - "vite.config.js"
       - ".github/workflows/android.yml"
 
+permissions:
+  contents: write
+
 jobs:
   build-apk:
     runs-on: ubuntu-latest
@@ -67,3 +70,17 @@ jobs:
           name: runner-arena-v0-debug-apk
           path: runner-arena-v0-debug.apk
           if-no-files-found: error
+
+      # Publie l'APK dans une Release « v0-latest » → lien de téléchargement
+      # direct, sans connexion GitHub. Mise à jour à chaque build.
+      - name: Publish to Release (v0-latest)
+        if: github.ref == 'refs/heads/claude/hexagon-map-gamification-zcqrrl'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0-latest
+          name: Runner Arena — v0 (dernier build)
+          prerelease: true
+          files: runner-arena-v0-debug.apk
+          body: |
+            APK debug (installable directement). Build automatique du dernier commit.
+            Intro + login · cinématique de fin (combat Nyx) · badges · merveilles · backend.

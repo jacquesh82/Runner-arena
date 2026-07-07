@@ -5,7 +5,7 @@
  * ==================================================================== */
 
 .intro {
-  --cyan: #00e5ff;
+  --cyan: #ec7a1c;
   --pink: #ff2d95;
   --ink: #eaf0ff;
   --muted: #8390b8;
@@ -194,18 +194,18 @@
     0 4px 0 #63789f, 0 5px 0 #52678c, 0 9px 14px rgba(0, 0, 0, 0.55);
 }
 .logo3d .w-arena {
-  background-image: linear-gradient(180deg, #e8ffff 0%, #8ef2ff 44%, #00e5ff 66%, #00a7c9 100%);
+  background-image: linear-gradient(180deg, #ffe8cf 0%, #ffab4d 44%, #ec7a1c 66%, #c85f12 100%);
   text-shadow:
-    0 1px 0 #23c3e6, 0 2px 0 #16b0d6, 0 3px 0 #0b9dc4,
-    0 4px 0 #058ab0, 0 5px 0 #04789a,
-    0 9px 14px rgba(0, 100, 130, 0.5), 0 8px 26px rgba(0, 229, 255, 0.4);
+    0 1px 0 #f09a3a, 0 2px 0 #d17a2a, 0 3px 0 #c85f12,
+    0 4px 0 #a84f0e, 0 5px 0 #8f430c,
+    0 9px 14px rgba(60, 25, 0, 0.5), 0 8px 26px rgba(236, 122, 28, 0.45);
 }
 .logo3d .mark {
-  background-image: linear-gradient(180deg, #eaffff, #00e5ff 70%, #0090b0);
+  background-image: linear-gradient(180deg, #ffe8cf, #ec7a1c 70%, #c85f12);
   font-size: 0.74em;
   letter-spacing: -3px;
   margin-right: 9px;
-  text-shadow: 0 2px 0 #0aa9cc, 0 4px 0 #077f9c, 0 6px 12px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 2px 0 #c85f12, 0 4px 0 #8f430c, 0 6px 12px rgba(0, 0, 0, 0.5);
 }
 
 /* ---------------- Bouton son ---------------- */
@@ -267,7 +267,7 @@
   background: linear-gradient(
     90deg,
     #ff3b3b, #ff8a00, #ffe600, #33e06b,
-    #00cfff, #4d7bff, #a45cff, #ff4dc6, #ff3b3b
+    #00cfff, #ec7a1c, #a45cff, #ff4dc6, #ff3b3b
   );
   background-size: 400% 100%;
   animation: chameleon 6s linear infinite;
